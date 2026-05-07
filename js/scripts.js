@@ -143,6 +143,9 @@ const popup      = document.getElementById('event-popup');
 const popupClose = document.getElementById('popup-close');
 
 if (popup) {
+  // Affiche au chargement
+  popup.classList.remove('popup-hidden');
+
   // Ferme via la croix
   popupClose.addEventListener('click', () => {
     popup.classList.add('popup-hidden');
