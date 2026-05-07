@@ -353,8 +353,9 @@ section {
 .tile-content {
   position: absolute;
   bottom: 0; left: 0; right: 0;
-  padding: 1.8rem;
+  padding: 1rem;
   z-index: 2;
+  text-align: center;
 }
 
 .tile-icon {
@@ -365,15 +366,16 @@ section {
 
 .tile-content h3 {
   font-family: var(--font-display);
-  font-size: 1.4rem;
+  font-size: clamp(0.9rem, 3vw, 1.4rem);
   color: var(--cream);
   margin-bottom: 0.3rem;
   transition: color var(--transition);
+  word-break: break-word;
 }
 .tile:hover .tile-content h3 { color: var(--gold); }
 
 .tile-content p {
-  font-size: 0.82rem;
+  font-size: clamp(0.65rem, 2vw, 0.82rem);
   color: var(--cream-dim);
   font-style: italic;
 }
@@ -660,8 +662,8 @@ footer {
   #navbar.menu-open .nav-logo { opacity: 0; pointer-events: none; }
   #navbar.menu-open { background: transparent !important; backdrop-filter: none !important; border: none !important; }
 
-  .tiles-grid { grid-template-columns: 1fr; }
-  .tile { height: 200px; }
+  .tiles-grid { grid-template-columns: 1fr 1fr; }
+  .tile { height: 180px; }
 
   .event-card { flex-direction: column; }
 
