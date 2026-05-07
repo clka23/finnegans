@@ -131,3 +131,25 @@ document.querySelectorAll('#nav-links a').forEach(link => {
     overlay.classList.remove('active');
   });
 });
+
+
+/* ═══════════════════════════════════════════
+   POPUP ÉVÉNEMENT
+   Pour désactiver depuis l'admin :
+   mettre popup-hidden sur #event-popup au chargement
+   (via Firebase : if (!eventActive) popup.classList.add('popup-hidden'))
+═══════════════════════════════════════════ */
+const popup      = document.getElementById('event-popup');
+const popupClose = document.getElementById('popup-close');
+
+if (popup) {
+  // Ferme via la croix
+  popupClose.addEventListener('click', () => {
+    popup.classList.add('popup-hidden');
+  });
+
+  // Ferme en cliquant sur le fond
+  popup.addEventListener('click', e => {
+    if (e.target === popup) popup.classList.add('popup-hidden');
+  });
+}
