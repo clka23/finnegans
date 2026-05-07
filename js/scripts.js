@@ -105,18 +105,29 @@ window.addEventListener('scroll', () => {
 /* ═══════════════════════════════════════════
    BURGER MENU
 ═══════════════════════════════════════════ */
+// Overlay pour fermer le menu
+const overlay = document.createElement('div');
+overlay.id = 'menu-overlay';
+document.body.appendChild(overlay);
+
 burger.addEventListener('click', e => {
   e.stopPropagation();
-  navLinks.classList.toggle('open');
+  const isOpen = navLinks.classList.toggle('open');
   navbar.classList.toggle('menu-open');
+  overlay.classList.toggle('active', isOpen);
 });
 
-// Ferme si clic en dehors du menu
-document.addEventListener('click', e => {
-  if (navLinks.classList.contains('open') &&
-      !navLinks.contains(e.target) &&
-      e.target !== burger) {
+overlay.addEventListener('click', () => {
+  navLinks.classList.remove('open');
+  navbar.classList.remove('menu-open');
+  overlay.classList.remove('active');
+});
+
+// Ferme aussi via les liens
+document.querySelectorAll('#nav-links a').forEach(link => {
+  link.addEventListener('click', () => {
     navLinks.classList.remove('open');
     navbar.classList.remove('menu-open');
-  }
+    overlay.classList.remove('active');
+  });
 });

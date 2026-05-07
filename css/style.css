@@ -112,6 +112,16 @@ ul { list-style: none; }
 }
 
 
+/* Overlay menu mobile */
+#menu-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 97;
+  background: transparent;
+}
+#menu-overlay.active { display: block; }
+
 /* ═══════════════════════════════════════════
    HERO
 ═══════════════════════════════════════════ */
@@ -644,11 +654,14 @@ footer {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 2.5rem;
+    justify-content: flex-start;
+    padding-top: 5rem;
+    gap: 2rem;
     position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(13, 31, 16, 0.92);
+    top: 0; left: 0; right: 0;
+    height: auto;
+    padding-bottom: 2.5rem;
+    background: rgba(13, 31, 16, 0.97);
     backdrop-filter: blur(10px);
     z-index: 98;
     transform: translateY(-100%);
