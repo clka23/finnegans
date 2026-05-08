@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════
-   FINNEGAN'S — SITE PUBLIC firebase.js
+   FINNEGAN'S — SITE PUBLIC firebase.js v2
    Charge les données depuis Firestore
 ═══════════════════════════════════════════ */
 
@@ -32,90 +32,81 @@ const db  = getFirestore(app);
 ═══════════════════════════════════════════ */
 async function loadCarte() {
   try {
-    // 1. Charger les catégories
     const catSnap = await getDocs(query(collection(db, 'categories'), orderBy('nom')));
     const categories = catSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-    // 2. Charger les articles
     const artSnap = await getDocs(collection(db, 'articles'));
     const articles = artSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-    // 3. Grouper par catégorie
-    const sections = {
-      'bieres':       { el: document.getElementById('bieres'),       articles: [] },
-      'cocktails':     { el: document.getElementById('cocktails'),     articles: [] },
-      'softs':        { el: document.getElementById('softs'),        articles: [] },
-      'restauration': { el: document.getElementById('restauration'), articles: [] }
-    };
-
-    // Associer chaque article à sa section via le nom de la catégorie
-    articles.forEach(article => {
-      const cat = categories.find(c => c.id === article.categorieId);
-      if (!cat) return;
-
-      const catNom = cat.nom.toLowerCase();
-      if (catNom.includes('bière') || catNom.includes('biere') || catNom.includes('pression') || catNom.includes('bouteille')) {
-        sections['bieres'].articles.push(article);
-      } else if (catNom.includes('cocktail') || catNom.includes('drink')) {
-        sections['cocktails'].articles.push(article);
-      } else if (catNom.includes('soft') || catNom.includes('soda') || catNom.includes('jus') || catNom.includes('chaud') || catNom.includes('boisson')) {
-        sections['softs'].articles.push(article);
-      } else if (catNom.includes('restauration') || catNom.includes('plat') || catNom.includes('burger') || catNom.includes('entrée') || catNom.includes('dessert') || catNom.includes('salade') || catNom.includes('soupe')) {
-        sections['restauration'].articles.push(article);
-      }
+    // 1. Vider d'abord toutes les sections
+    ['bieres', 'cocktails', 'softs', 'restauration'].forEach(sectionId => {
+      const section = document.getElementById(sectionId);
+      if (!section) return;
+      const container = section.querySelector('.drinks-grid, .menu-grid');
+      if (!container) return;
+      container.innerHTML = '';
     });
 
-    // 4. Remplacer le contenu des sections qui ont des articles
-    Object.values(sections).forEach(section => {
-      if (section.articles.length === 0) return; // Garde le HTML statique si vide
+    if (articles.length === 0) {
+      // Si aucun article Firebase, le HTML statique reste visible
+      return;
+    }
 
-      const container = section.el.querySelector('.drinks-grid, .menu-grid');
+    // 2. Remplir les sections avec les articles
+    articles.forEach(article => {
+      const cat = categories.find(c => c.id === article.categorieId);
+      const catNom = cat ? cat.nom.toLowerCase() : '';
+
+      // Déterminer la section selon le nom de la catégorie
+      let sectionId = 'softs'; // section par défaut
+
+      if (catNom.includes('bière') || catNom.includes('biere') || catNom.includes('pression') || catNom.includes('bouteille') || catNom.includes('stout') || catNom.includes('ale') || catNom.includes('lager')) {
+        sectionId = 'bieres';
+      } else if (catNom.includes('cocktail') || catNom.includes('drink') || catNom.includes('mule') || catNom.includes('mojito') || catNom.includes('fashioned') || catNom.includes('coffee')) {
+        sectionId = 'cocktails';
+      } else if (catNom.includes('restauration') || catNom.includes('plat') || catNom.includes('burger') || catNom.includes('entrée') || catNom.includes('dessert') || catNom.includes('salade') || catNom.includes('soupe') || catNom.includes('snack') || catNom.includes('food')) {
+        sectionId = 'restauration';
+      } else if (catNom.includes('soft') || catNom.includes('soda') || catNom.includes('jus') || catNom.includes('chaud') || catNom.includes('boisson') || catNom.includes('eau') || catNom.includes('café') || catNom.includes('thé') || catNom.includes('chocolat')) {
+        sectionId = 'softs';
+      }
+
+      const section = document.getElementById(sectionId);
+      if (!section) return;
+      const container = section.querySelector('.drinks-grid, .menu-grid');
       if (!container) return;
 
-      container.innerHTML = '';
-
-      section.articles.forEach(article => {
-        // Utiliser le composant drink-card pour les bières et cocktails
-        if (section.el.id === 'bieres' || section.el.id === 'cocktails') {
-          const card = document.createElement('article');
-          card.className = 'drink-card reveal';
-          card.innerHTML = `
-            <div class="drink-img-wrap">
-              <img src="https://images.unsplash.com/photo-1608270586620-248524c67de9?w=600&q=80" alt="${article.nom}" loading="lazy" />
-            </div>
-            <div class="drink-info">
-              <h3>${article.nom}</h3>
-              <p class="drink-origin">${article.description || ''}</p>
-              <ul class="drink-variants">
-                ${(article.variantes || []).map(v => `
-                  <li><span>${v.label}</span><span class="price">${v.price}</span></li>
-                `).join('')}
-              </ul>
-            </div>
-          `;
-          container.appendChild(card);
-
-        } else {
-          // Pour softs et restauration, format menu-list
-          const catDiv = document.createElement('div');
-          catDiv.className = 'menu-category reveal';
-          catDiv.innerHTML = `
-            <h3 class="menu-cat-title">${article.nom}</h3>
-            <ul class="menu-list">
+      // Créer la carte
+      if (sectionId === 'bieres' || sectionId === 'cocktails') {
+        const card = document.createElement('article');
+        card.className = 'drink-card reveal';
+        card.innerHTML = `
+          <div class="drink-img-wrap">
+            <img src="https://images.unsplash.com/photo-1608270586620-248524c67de9?w=600&q=80" alt="${article.nom}" loading="lazy" />
+          </div>
+          <div class="drink-info">
+            <h3>${article.nom}</h3>
+            <p class="drink-origin">${article.description || ''}</p>
+            <ul class="drink-variants">
               ${(article.variantes || []).map(v => `
                 <li><span>${v.label}</span><span class="price">${v.price}</span></li>
               `).join('')}
             </ul>
-          `;
-          container.appendChild(catDiv);
-        }
-      });
-    });
-
-    // Réinitialiser les animations GSAP/IntersectionObserver pour les nouveaux éléments
-    document.querySelectorAll('.reveal').forEach(el => {
-      el.classList.remove('visible');
-      // L'IntersectionObserver existant dans scripts.js les réobservera automatiquement car ils sont déjà dans le DOM
+          </div>
+        `;
+        container.appendChild(card);
+      } else {
+        const catDiv = document.createElement('div');
+        catDiv.className = 'menu-category reveal';
+        catDiv.innerHTML = `
+          <h3 class="menu-cat-title">${article.nom}</h3>
+          <ul class="menu-list">
+            ${(article.variantes || []).map(v => `
+              <li><span>${v.label}</span><span class="price">${v.price}</span></li>
+            `).join('')}
+          </ul>
+        `;
+        container.appendChild(catDiv);
+      }
     });
 
   } catch (err) {
@@ -181,12 +172,10 @@ async function loadInfos() {
     const data = snap.data();
     const blocks = document.querySelectorAll('#infos .info-block');
 
-    // Adresse
     if (data.adresse && blocks[0]) {
       blocks[0].querySelector('p').innerHTML = `${data.adresse.rue || ''}<br />${data.adresse.ville || ''}`;
     }
 
-    // Horaires
     if (data.horaires && blocks[1]) {
       const jours = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'];
       const joursFR = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
@@ -203,7 +192,6 @@ async function loadInfos() {
       blocks[1].querySelector('p').innerHTML = html || 'Horaires non disponibles';
     }
 
-    // Contact
     if (data.contact && blocks[2]) {
       blocks[2].querySelector('p').innerHTML = `${data.contact.tel || ''}<br />${data.contact.email || ''}`;
     }
@@ -257,23 +245,21 @@ async function loadPopup() {
     console.error('Erreur chargement popup :', err);
   }
 }
+
+
 /* ═══════════════════════════════════════════
    INIT — TOUT CHARGER
 ═══════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', async () => {
-  // Force l'affichage immédiat des éléments reveal du hero
   document.querySelectorAll('#hero .reveal').forEach(el => {
     el.classList.add('visible');
   });
 
-  // Charge les données Firebase
   await loadCarte();
   await loadEvenements();
   await loadInfos();
   await loadPopup();
 
-  // Réinitialise l'IntersectionObserver pour les nouveaux éléments
-  // (l'ancien observe toujours les éléments existants, on le relance)
   document.querySelectorAll('.reveal:not(.visible)').forEach(el => {
     if (el.closest('#hero')) {
       el.classList.add('visible');
