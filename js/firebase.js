@@ -90,8 +90,12 @@ function generateCategoryTiles(categories) {
     const tile = document.createElement('a');
     tile.href = `#cat-${cat.id}`;
     tile.className = 'tile reveal';
+    
+    // Utiliser l'image de la catégorie si disponible, sinon l'image par défaut
+    const imageUrl = cat.imageBase64 || defaultImages.tile;
+    
     tile.innerHTML = `
-      <div class="tile-bg" style="background-image:url('${defaultImages.tile}')"></div>
+      <div class="tile-bg" style="background-image:url('${imageUrl}')"></div>
       <div class="tile-overlay"></div>
       <div class="tile-content">
         <h3>${cat.nom}</h3>
@@ -164,9 +168,13 @@ function generateDynamicSections(categories, articles) {
     catArticles.forEach(article => {
       const card = document.createElement('article');
       card.className = 'drink-card reveal';
+      
+      // Utiliser l'image de l'article si disponible, sinon l'image par défaut
+      const imageUrl = article.imageBase64 || defaultImages.article;
+      
       card.innerHTML = `
         <div class="drink-img-wrap">
-          <img src="${article.imageUrl || defaultImages.article}" alt="${article.nom}" loading="lazy" />
+          <img src="${imageUrl}" alt="${article.nom}" loading="lazy" />
         </div>
         <div class="drink-info">
           <h3>${article.nom}</h3>
@@ -206,7 +214,16 @@ async function loadEvenements() {
       const ev = d.data();
       const article = document.createElement('article');
       article.className = 'event-card reveal';
+      
+      // Ajouter l'image si disponible
+      const imageHtml = ev.imageBase64 ? `
+        <div class="event-img-wrap">
+          <img src="${ev.imageBase64}" alt="${ev.titre}" loading="lazy" />
+        </div>
+      ` : '';
+      
       article.innerHTML = `
+        ${imageHtml}
         <div class="event-date">
           <span class="event-day">${ev.jour}</span>
           <span class="event-month">${ev.mois}</span>
