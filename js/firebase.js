@@ -217,7 +217,7 @@ async function loadInfos() {
 /* ═══════════════════════════════════════════
    4. CHARGER LA POPUP
 ═══════════════════════════════════════════ */
-aasync function loadPopup() {
+async function loadPopup() {
   const popup = document.getElementById('event-popup');
   if (!popup) return;
 
