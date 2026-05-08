@@ -654,21 +654,19 @@ document.getElementById('btn-save-popup').addEventListener('click', async () => 
   feedback.className = 'form-feedback';
 
   try {
-    let imageUrl = uploadImgPreview.src && !uploadImgPreview.classList.contains('hidden') 
-                   ? uploadImgPreview.src 
-                   : null;
+    let imageBase64 = null;
 
-    // Upload de la nouvelle image vers Firebase Storage
     if (popupImageFile) {
-      const storageRef = ref(storage, `popup/${Date.now()}_${popupImageFile.name}`);
-      const snapshot = await uploadBytes(storageRef, popupImageFile);
-      imageUrl = await getDownloadURL(snapshot.ref);
+      // Compression de l'image avant stockage
+      imageBase64 = await compressImage(popupImageFile, 800, 600);
       popupImageFile = null;
+    } else if (uploadImgPreview.src && !uploadImgPreview.classList.contains('hidden')) {
+      imageBase64 = uploadImgPreview.src;
     }
 
     await setDoc(doc(db, 'config', 'popup'), {
       active, titre, description: desc,
-      imageUrl: imageUrl,
+      imageBase64: imageBase64,
       reservation: { active: resaActive, paid: resaPaid, max: resaMax },
       updatedAt: new Date()
     });
@@ -682,6 +680,39 @@ document.getElementById('btn-save-popup').addEventListener('click', async () => 
     console.error(err);
   }
 });
+
+// Fonction de compression d'image
+function compressImage(file, maxWidth, maxHeight) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth) {
+          height = (maxWidth / width) * height;
+          width = maxWidth;
+        }
+        if (height > maxHeight) {
+          width = (maxHeight / height) * width;
+          height = maxHeight;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', 0.65));
+      };
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
 /* ═══════════════════════════════════════════
    HORAIRES
 ═══════════════════════════════════════════ */

@@ -234,7 +234,6 @@ async function loadPopup() {
       return;
     }
 
-    // Mettre à jour le contenu
     const titreEl = popup.querySelector('.popup-body h2');
     const descEl  = popup.querySelector('.popup-desc');
     const imgEl   = popup.querySelector('.popup-img-wrap img');
@@ -243,16 +242,10 @@ async function loadPopup() {
     if (titreEl && data.titre) titreEl.textContent = data.titre;
     if (descEl && data.description) descEl.textContent = data.description;
     if (labelEl) labelEl.textContent = 'Événement à venir';
-    
-    // NOUVEAU : Charge l'image depuis Firebase Storage
-    if (imgEl && data.imageUrl) {
-      imgEl.src = data.imageUrl;
-    }
+    if (imgEl && data.imageBase64) imgEl.src = data.imageBase64;
 
-    // Afficher
     popup.classList.remove('popup-hidden');
 
-    // Fermeture
     document.getElementById('popup-close').addEventListener('click', () => {
       popup.classList.add('popup-hidden');
     });
