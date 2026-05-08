@@ -200,6 +200,32 @@
             <label>Tag</label>
             <input type="text" id="event-tag" placeholder="ex : Sport, Musique live, Jeux…" />
           </div>
+
+          <!-- ── RÉSERVATION — ÉVÉNEMENT ── -->
+          <div class="reservation-block hidden" style="margin-bottom:1.2rem">
+            <h4 style="font-size:0.68rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--gold);opacity:0.8;margin-bottom:0.8rem">Réservation</h4>
+            <div class="toggle-row">
+              <span>Activer la réservation</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="event-resa-active" />
+                <span class="toggle-track"></span>
+              </label>
+            </div>
+            <div id="event-resa-options" class="resa-options hidden">
+              <div class="toggle-row" style="margin-top:0.9rem">
+                <span>Réservation payante</span>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="event-resa-paid" />
+                  <span class="toggle-track"></span>
+                </label>
+              </div>
+              <div class="field-group" style="margin-top:0.9rem">
+                <label>Nombre max de réservations</label>
+                <input type="number" id="event-resa-max" min="1" placeholder="ex : 80" />
+              </div>
+            </div>
+          </div>
+
           <button class="btn-primary small" id="btn-save-event">Ajouter l'événement</button>
           <p class="form-feedback" id="event-feedback"></p>
         </div>
@@ -260,6 +286,32 @@
             <label>Description</label>
             <textarea id="popup-desc" rows="3" placeholder="ex : France vs Irlande — Vendredi 14 Juin à 20h"></textarea>
           </div>
+
+          <!-- ── RÉSERVATION — POPUP ── -->
+          <div class="reservation-block hidden" style="margin-bottom:1.2rem">
+            <h4 style="font-size:0.68rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--gold);opacity:0.8;margin-bottom:0.8rem">Réservation depuis la popup</h4>
+            <div class="toggle-row">
+              <span>Activer la réservation</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="popup-resa-active" />
+                <span class="toggle-track"></span>
+              </label>
+            </div>
+            <div id="popup-resa-options" class="resa-options hidden">
+              <div class="toggle-row" style="margin-top:0.9rem">
+                <span>Réservation payante</span>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="popup-resa-paid" />
+                  <span class="toggle-track"></span>
+                </label>
+              </div>
+              <div class="field-group" style="margin-top:0.9rem">
+                <label>Nombre max de réservations</label>
+                <input type="number" id="popup-resa-max" min="1" placeholder="ex : 80" />
+              </div>
+            </div>
+          </div>
+
           <button class="btn-primary small" id="btn-save-popup">Enregistrer</button>
           <p class="form-feedback" id="popup-feedback"></p>
         </div>

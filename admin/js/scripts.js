@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════
-   FINNEGAN'S — ADMIN scripts.js v2
+   FINNEGAN'S — ADMIN scripts.js v3
 ═══════════════════════════════════════════ */
 
 /* ─── Animations CSS injectées ─── */
@@ -15,6 +15,15 @@ adminStyle.textContent = `
   }
 `;
 document.head.appendChild(adminStyle);
+
+
+/* ═══════════════════════════════════════════
+   FEATURE FLAG — RÉSERVATION
+   Mettre à true pour activer la fonctionnalité
+   pour ce client. False = invisible partout.
+═══════════════════════════════════════════ */
+const FEATURE_RESERVATION = true;
+// TODO Firebase : lire depuis Firestore -> config/features -> reservation
 
 
 /* ═══════════════════════════════════════════
@@ -48,13 +57,13 @@ loginForm.addEventListener('submit', e => {
     return;
   }
 
-  // Simulation — remplacer par firebase.auth().signInWithEmailAndPassword(email, pw)
   if (email === TEMP_EMAIL && pw === TEMP_PASSWORD) {
     loginScreen.style.animation = 'fadeOut 0.4s ease forwards';
     setTimeout(() => {
       loginScreen.classList.add('hidden');
       adminScreen.classList.remove('hidden');
       topbarUser.textContent = email;
+      initReservationFeature();
     }, 380);
   } else {
     loginError.textContent = 'Identifiants incorrects.';
@@ -70,13 +79,29 @@ togglePw.addEventListener('click', () => {
 });
 
 document.getElementById('btn-logout').addEventListener('click', () => {
-  // firebase.auth().signOut()
   adminScreen.classList.add('hidden');
   loginScreen.classList.remove('hidden');
   loginScreen.style.animation = '';
   loginForm.reset();
   loginError.textContent = '';
 });
+
+
+/* ═══════════════════════════════════════════
+   FEATURE FLAG — INIT
+   Affiche ou masque les blocs réservation
+   selon le flag client
+═══════════════════════════════════════════ */
+function initReservationFeature() {
+  const blocks = document.querySelectorAll('.reservation-block');
+  blocks.forEach(b => {
+    if (FEATURE_RESERVATION) {
+      b.classList.remove('hidden');
+    } else {
+      b.classList.add('hidden');
+    }
+  });
+}
 
 
 /* ═══════════════════════════════════════════
@@ -139,7 +164,6 @@ function renderCategories() {
   select.innerHTML = '';
 
   categories.forEach((cat, i) => {
-    // Tag dans la liste
     const tag = document.createElement('div');
     tag.className = 'tag-item';
     tag.innerHTML = `
@@ -148,14 +172,12 @@ function renderCategories() {
     `;
     list.appendChild(tag);
 
-    // Option dans le select article
     const opt = document.createElement('option');
     opt.value = cat.toLowerCase();
     opt.textContent = cat;
     select.appendChild(opt);
   });
 
-  // Renommer au clic sur le nom
   list.querySelectorAll('.tag-name').forEach(el => {
     el.addEventListener('click', () => {
       renamingIndex = parseInt(el.dataset.index);
@@ -165,10 +187,12 @@ function renderCategories() {
     });
   });
 
-  // Supprimer
+  // Supprimer — avec confirmation
   list.querySelectorAll('.tag-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const i = parseInt(btn.dataset.index);
+      const nom = categories[i];
+      if (!confirm(`Supprimer la catégorie "${nom}" et TOUT son contenu ?`)) return;
       categories.splice(i, 1);
       renderCategories();
       // TODO Firebase : supprimer dans Firestore
@@ -176,7 +200,6 @@ function renderCategories() {
   });
 }
 
-// Ajouter une catégorie
 document.getElementById('btn-add-cat').addEventListener('click', () => {
   const input = document.getElementById('new-cat-input');
   const val = input.value.trim();
@@ -196,7 +219,6 @@ document.getElementById('new-cat-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') document.getElementById('btn-add-cat').click();
 });
 
-// Modale renommer
 document.getElementById('rename-cat-confirm').addEventListener('click', () => {
   const newName = document.getElementById('rename-cat-input').value.trim();
   if (!newName || renamingIndex === null) return;
@@ -233,11 +255,8 @@ function addVariante(label = '', price = '') {
 }
 
 document.getElementById('btn-add-variante').addEventListener('click', () => addVariante());
-
-// Ajouter une variante vide au départ
 addVariante();
 
-// Sauvegarder un article (structure prête pour Firebase)
 document.getElementById('btn-save-article').addEventListener('click', () => {
   const feedback = document.getElementById('article-feedback');
   const nom = document.getElementById('article-nom').value.trim();
@@ -257,8 +276,6 @@ document.getElementById('btn-save-article').addEventListener('click', () => {
     return;
   }
 
-  // Structure prête pour Firestore :
-  // { categorie: cat, nom, description: desc, variantes }
   console.log('Article à sauvegarder :', { categorie: cat, nom, description: desc, variantes });
 
   feedback.textContent = '✓ Article prêt (Firebase requis pour sauvegarder).';
@@ -270,11 +287,31 @@ document.getElementById('btn-save-article').addEventListener('click', () => {
 /* ═══════════════════════════════════════════
    ÉVÉNEMENTS
 ═══════════════════════════════════════════ */
-
-// Date min = aujourd'hui
 const eventDateInput = document.getElementById('event-date');
 const today = new Date().toISOString().split('T')[0];
 eventDateInput.setAttribute('min', today);
+
+/* ── Réservation — Événements ── */
+const eventResaToggle   = document.getElementById('event-resa-active');
+const eventResaPaid     = document.getElementById('event-resa-paid');
+const eventResaPaidRow  = document.getElementById('event-resa-paid-row');
+const eventResaOptions  = document.getElementById('event-resa-options');
+
+// Activer/désactiver la résa affiche/masque les sous-options
+eventResaToggle.addEventListener('change', () => {
+  eventResaOptions.classList.toggle('hidden', !eventResaToggle.checked);
+  if (!eventResaToggle.checked) {
+    eventResaPaid.checked = false;
+  }
+});
+
+// Activer le payant active automatiquement la résa
+eventResaPaid.addEventListener('change', () => {
+  if (eventResaPaid.checked && !eventResaToggle.checked) {
+    eventResaToggle.checked = true;
+    eventResaOptions.classList.remove('hidden');
+  }
+});
 
 document.getElementById('btn-save-event').addEventListener('click', () => {
   const feedback = document.getElementById('event-feedback');
@@ -283,21 +320,35 @@ document.getElementById('btn-save-event').addEventListener('click', () => {
   const desc  = document.getElementById('event-desc').value.trim();
   const tag   = document.getElementById('event-tag').value.trim();
 
+  // Réservation
+  const resaActive  = FEATURE_RESERVATION && eventResaToggle.checked;
+  const resaPaid    = FEATURE_RESERVATION && eventResaPaid.checked;
+  const resaMax     = resaActive ? parseInt(document.getElementById('event-resa-max').value) || 0 : 0;
+
   if (!date || !titre) {
     feedback.textContent = 'La date et le titre sont obligatoires.';
     feedback.className = 'form-feedback error';
     return;
   }
 
-  // Formater le jour et mois pour le site public
+  if (resaActive && resaMax <= 0) {
+    feedback.textContent = 'Indiquez un nombre maximum de réservations.';
+    feedback.className = 'form-feedback error';
+    return;
+  }
+
   const d = new Date(date + 'T00:00:00');
   const jour = d.getDate();
   const mois = d.toLocaleString('fr-FR', { month: 'long' });
   const moisCap = mois.charAt(0).toUpperCase() + mois.slice(1);
 
-  // Structure prête pour Firestore :
-  // { date, jour, mois: moisCap, titre, description: desc, tag }
-  console.log('Événement à sauvegarder :', { date, jour, mois: moisCap, titre, description: desc, tag });
+  // Structure Firestore :
+  // { date, jour, mois, titre, description, tag, reservation: { active, paid, max, count: 0 } }
+  const payload = {
+    date, jour, mois: moisCap, titre, description: desc, tag,
+    reservation: { active: resaActive, paid: resaPaid, max: resaMax, count: 0 }
+  };
+  console.log('Événement à sauvegarder :', payload);
 
   feedback.textContent = '✓ Événement prêt (Firebase requis pour sauvegarder).';
   feedback.className = 'form-feedback success';
@@ -307,6 +358,10 @@ document.getElementById('btn-save-event').addEventListener('click', () => {
     document.getElementById('event-titre').value = '';
     document.getElementById('event-desc').value = '';
     document.getElementById('event-tag').value = '';
+    eventResaToggle.checked = false;
+    eventResaPaid.checked = false;
+    eventResaOptions.classList.add('hidden');
+    document.getElementById('event-resa-max').value = '';
   }, 3000);
 });
 
@@ -314,8 +369,8 @@ document.getElementById('btn-save-event').addEventListener('click', () => {
 /* ═══════════════════════════════════════════
    POPUP — UPLOAD IMAGE
 ═══════════════════════════════════════════ */
-const popupImgInput   = document.getElementById('popup-img-input');
-const uploadZone      = document.getElementById('upload-zone');
+const popupImgInput     = document.getElementById('popup-img-input');
+const uploadZone        = document.getElementById('upload-zone');
 const uploadPlaceholder = document.getElementById('upload-placeholder');
 const uploadImgPreview  = document.getElementById('upload-img-preview');
 const uploadRemoveBtn   = document.getElementById('upload-remove');
@@ -340,7 +395,6 @@ popupImgInput.addEventListener('change', () => {
   reader.readAsDataURL(file);
 });
 
-// Drag & drop
 uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.style.borderColor = 'var(--gold)'; });
 uploadZone.addEventListener('dragleave', () => { uploadZone.style.borderColor = ''; });
 uploadZone.addEventListener('drop', e => {
@@ -363,13 +417,47 @@ uploadRemoveBtn.addEventListener('click', () => {
   uploadRemoveBtn.classList.add('hidden');
 });
 
+/* ── Réservation — Popup ── */
+const popupResaToggle  = document.getElementById('popup-resa-active');
+const popupResaPaid    = document.getElementById('popup-resa-paid');
+const popupResaOptions = document.getElementById('popup-resa-options');
+
+popupResaToggle.addEventListener('change', () => {
+  popupResaOptions.classList.toggle('hidden', !popupResaToggle.checked);
+  if (!popupResaToggle.checked) {
+    popupResaPaid.checked = false;
+  }
+});
+
+popupResaPaid.addEventListener('change', () => {
+  if (popupResaPaid.checked && !popupResaToggle.checked) {
+    popupResaToggle.checked = true;
+    popupResaOptions.classList.remove('hidden');
+  }
+});
+
 document.getElementById('btn-save-popup').addEventListener('click', () => {
   const feedback = document.getElementById('popup-feedback');
   const titre  = document.getElementById('popup-titre').value.trim();
   const desc   = document.getElementById('popup-desc').value.trim();
   const active = document.getElementById('popup-active').checked;
 
-  console.log('Popup à sauvegarder :', { active, titre, description: desc, image: popupImgInput.files[0]?.name });
+  const resaActive = FEATURE_RESERVATION && popupResaToggle.checked;
+  const resaPaid   = FEATURE_RESERVATION && popupResaPaid.checked;
+  const resaMax    = resaActive ? parseInt(document.getElementById('popup-resa-max').value) || 0 : 0;
+
+  if (resaActive && resaMax <= 0) {
+    feedback.textContent = 'Indiquez un nombre maximum de réservations.';
+    feedback.className = 'form-feedback error';
+    return;
+  }
+
+  const payload = {
+    active, titre, description: desc,
+    image: popupImgInput.files[0]?.name,
+    reservation: { active: resaActive, paid: resaPaid, max: resaMax }
+  };
+  console.log('Popup à sauvegarder :', payload);
 
   feedback.textContent = '✓ Popup prête (Firebase requis pour sauvegarder).';
   feedback.className = 'form-feedback success';
@@ -382,20 +470,6 @@ document.getElementById('btn-save-popup').addEventListener('click', () => {
 ═══════════════════════════════════════════ */
 const JOURS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
 
-// Créneaux toutes les 30 min de 6h00 à 5h30 (lendemain)
-function buildTimeOptions() {
-  const options = [];
-  for (let h = 6; h < 30; h++) {
-    const hh = h % 24;
-    const label = `${String(hh).padStart(2,'0')}h${h % 1 === 0.5 ? '30' : '00'}`;
-    options.push(`<option value="${label}">${label}</option>`);
-    const label2 = `${String(hh).padStart(2,'0')}h30`;
-    options.push(`<option value="${label2}">${label2}</option>`);
-  }
-  return options.join('');
-}
-
-// Correction : générer proprement toutes les demi-heures
 function buildTimeOptionsClean() {
   const opts = ['<option value="">—</option>'];
   for (let total = 6 * 60; total < 30 * 60; total += 30) {
@@ -442,7 +516,6 @@ function buildHorairesGrid() {
       </div>
     `;
 
-    // Case Fermé
     block.querySelector('.closed-cb').addEventListener('change', function() {
       block.classList.toggle('is-closed', this.checked);
     });
@@ -453,7 +526,6 @@ function buildHorairesGrid() {
 
 buildHorairesGrid();
 
-// Sauvegarder les infos pratiques
 document.getElementById('btn-save-infos').addEventListener('click', () => {
   const feedback = document.getElementById('infos-feedback');
 
@@ -477,8 +549,6 @@ document.getElementById('btn-save-infos').addEventListener('click', () => {
     horaires[id] = data;
   });
 
-  // Structure prête pour Firestore :
-  // { adresse: {rue, ville}, horaires, contact: {tel, email} }
   console.log('Infos à sauvegarder :', { adresse: { rue, ville }, horaires, contact: { tel, email } });
 
   feedback.textContent = '✓ Infos prêtes (Firebase requis pour sauvegarder).';
@@ -531,18 +601,16 @@ document.getElementById('modale-pw-confirm').addEventListener('click', () => {
 
 /* ═══════════════════════════════════════════
    MON COMPTE — EMAIL & TÉL (OTP)
-   UI complète — envoi réel requis Firebase
 ═══════════════════════════════════════════ */
-let otpContext = null; // 'email' ou 'tel'
-let otpChannel = null; // 'sms' ou 'email'
-let otpCode    = null; // code généré côté client (temporaire)
+let otpContext = null;
+let otpChannel = null;
+let otpCode    = null;
 
 function openOtpFlow(context) {
   otpContext = context;
   otpChannel = null;
   otpCode    = null;
 
-  // Reset
   document.getElementById('otp-step-1').classList.remove('hidden');
   document.getElementById('otp-step-2').classList.add('hidden');
   document.querySelectorAll('.otp-digit').forEach(d => d.value = '');
@@ -556,7 +624,6 @@ function openOtpFlow(context) {
   openModale('modale-otp');
 }
 
-// Boutons ouvrir OTP
 document.getElementById('btn-change-email').addEventListener('click', () => {
   const email = document.getElementById('compte-email').value.trim();
   if (!email) {
@@ -579,31 +646,23 @@ document.getElementById('btn-change-tel').addEventListener('click', () => {
   openOtpFlow('tel');
 });
 
-// Choix canal
 document.getElementById('otp-by-sms').addEventListener('click', () => sendOtp('sms'));
 document.getElementById('otp-by-email').addEventListener('click', () => sendOtp('email'));
 
 function sendOtp(channel) {
   otpChannel = channel;
-  // Génère un code 6 chiffres temporaire (côté client, pour la démo)
   otpCode = String(Math.floor(100000 + Math.random() * 900000));
-  console.log('Code OTP (démo) :', otpCode); // À retirer en prod
+  console.log('Code OTP (démo) :', otpCode);
 
   const dest = channel === 'sms' ? 'votre téléphone' : 'votre adresse e-mail';
-  document.getElementById('otp-sent-to').textContent = `Un code a été envoyé par ${channel === 'sms' ? 'SMS à' : 'e-mail à'} ${dest}.`;
-
-  // TODO Firebase :
-  // - SMS  → firebase phone auth ou Twilio via Cloud Function
-  // - Mail → firebase.auth().sendEmailVerification() ou nodemailer via Cloud Function
+  document.getElementById('otp-sent-to').textContent =
+    `Un code a été envoyé par ${channel === 'sms' ? 'SMS à' : 'e-mail à'} ${dest}.`;
 
   document.getElementById('otp-step-1').classList.add('hidden');
   document.getElementById('otp-step-2').classList.remove('hidden');
-
-  // Focus premier champ
   setTimeout(() => document.querySelector('.otp-digit').focus(), 80);
 }
 
-// Navigation entre les digits OTP
 document.querySelectorAll('.otp-digit').forEach((input, i, all) => {
   input.addEventListener('input', () => {
     input.value = input.value.replace(/\D/g, '').slice(0, 1);
@@ -614,14 +673,12 @@ document.querySelectorAll('.otp-digit').forEach((input, i, all) => {
   });
 });
 
-// Retour étape 1
 document.getElementById('otp-back').addEventListener('click', () => {
   document.getElementById('otp-step-1').classList.remove('hidden');
   document.getElementById('otp-step-2').classList.add('hidden');
   document.getElementById('otp-feedback').textContent = '';
 });
 
-// Valider le code
 document.getElementById('otp-validate').addEventListener('click', () => {
   const entered = [...document.querySelectorAll('.otp-digit')].map(d => d.value).join('');
   const feedback = document.getElementById('otp-feedback');
@@ -632,21 +689,17 @@ document.getElementById('otp-validate').addEventListener('click', () => {
     return;
   }
 
-  // Vérification temporaire côté client
-  // En prod : vérification côté Firebase / Cloud Function
   if (entered === otpCode) {
     closeModale('modale-otp');
 
     if (otpContext === 'email') {
       const fb = document.getElementById('email-feedback');
-      // TODO Firebase : firebase.auth().currentUser.updateEmail(newEmail)
       fb.textContent = '✓ E-mail mis à jour (Firebase requis).';
       fb.className = 'form-feedback success';
       document.getElementById('compte-email').value = '';
       setTimeout(() => fb.textContent = '', 3000);
     } else {
       const fb = document.getElementById('tel-feedback');
-      // TODO Firebase : mettre à jour dans Firestore
       fb.textContent = '✓ Téléphone mis à jour (Firebase requis).';
       fb.className = 'form-feedback success';
       document.getElementById('compte-tel').value = '';
@@ -660,5 +713,4 @@ document.getElementById('otp-validate').addEventListener('click', () => {
   }
 });
 
-// Fermer modale OTP
 document.getElementById('modale-otp-close').addEventListener('click', () => closeModale('modale-otp'));

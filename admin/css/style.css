@@ -841,3 +841,9 @@ textarea { resize: vertical; }
   .otp-inputs { gap: 0.35rem; }
   .otp-digit { width: 38px; height: 46px; font-size: 1.1rem; }
 }
+
+
+/* ═══════════════════════════════════════════
+   RÉSERVATION
+═══════════════════════════════════════════ */
+.resa-options.hidden { display: none; }
