@@ -709,15 +709,14 @@ popupImgInput.addEventListener('change', () => {
   const file = popupImgInput.files[0];
   if (!file) return;
   if (file.size > 5 * 1024 * 1024) { alert('Image trop lourde. Maximum : 5 Mo.'); return; }
-  popupImageFile = file;
-  const reader = new FileReader();
-  reader.onload = e => {
-    uploadImgPreview.src = e.target.result;
+  
+  openCropModal(file, 'popup', (croppedBase64) => {
+    popupImageFile = file;
+    uploadImgPreview.src = croppedBase64;
     uploadImgPreview.classList.remove('hidden');
     uploadPlaceholder.classList.add('hidden');
     uploadRemoveBtn.classList.remove('hidden');
-  };
-  reader.readAsDataURL(file);
+  });
 });
 
 uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.style.borderColor = 'var(--gold)'; });
@@ -753,15 +752,14 @@ catImgInput.addEventListener('change', () => {
   const file = catImgInput.files[0];
   if (!file) return;
   if (file.size > 5 * 1024 * 1024) { alert('Image trop lourde. Maximum : 5 Mo.'); return; }
-  catImageFile = file;
-  const reader = new FileReader();
-  reader.onload = e => {
-    catUploadImgPreview.src = e.target.result;
+  
+  openCropModal(file, 'category', (croppedBase64) => {
+    catImageFile = file;
+    catUploadImgPreview.src = croppedBase64;
     catUploadImgPreview.classList.remove('hidden');
     catUploadPlaceholder.classList.add('hidden');
     catUploadRemoveBtn.classList.remove('hidden');
-  };
-  reader.readAsDataURL(file);
+  });
 });
 
 catUploadZone.addEventListener('dragover', e => { e.preventDefault(); catUploadZone.style.borderColor = 'var(--gold)'; });
@@ -797,15 +795,14 @@ articleImgInput.addEventListener('change', () => {
   const file = articleImgInput.files[0];
   if (!file) return;
   if (file.size > 5 * 1024 * 1024) { alert('Image trop lourde. Maximum : 5 Mo.'); return; }
-  articleImageFile = file;
-  const reader = new FileReader();
-  reader.onload = e => {
-    articleUploadImgPreview.src = e.target.result;
+  
+  openCropModal(file, 'article', (croppedBase64) => {
+    articleImageFile = file;
+    articleUploadImgPreview.src = croppedBase64;
     articleUploadImgPreview.classList.remove('hidden');
     articleUploadPlaceholder.classList.add('hidden');
     articleUploadRemoveBtn.classList.remove('hidden');
-  };
-  reader.readAsDataURL(file);
+  });
 });
 
 articleUploadZone.addEventListener('dragover', e => { e.preventDefault(); articleUploadZone.style.borderColor = 'var(--gold)'; });
@@ -841,15 +838,14 @@ eventImgInput.addEventListener('change', () => {
   const file = eventImgInput.files[0];
   if (!file) return;
   if (file.size > 5 * 1024 * 1024) { alert('Image trop lourde. Maximum : 5 Mo.'); return; }
-  eventImageFile = file;
-  const reader = new FileReader();
-  reader.onload = e => {
-    eventUploadImgPreview.src = e.target.result;
+  
+  openCropModal(file, 'event', (croppedBase64) => {
+    eventImageFile = file;
+    eventUploadImgPreview.src = croppedBase64;
     eventUploadImgPreview.classList.remove('hidden');
     eventUploadPlaceholder.classList.add('hidden');
     eventUploadRemoveBtn.classList.remove('hidden');
-  };
-  reader.readAsDataURL(file);
+  });
 });
 
 eventUploadZone.addEventListener('dragover', e => { e.preventDefault(); eventUploadZone.style.borderColor = 'var(--gold)'; });
@@ -999,6 +995,216 @@ function compressImage(file, maxWidth, maxHeight) {
     reader.readAsDataURL(file);
   });
 }
+
+/* ═══════════════════════════════════════════
+   SYSTÈME DE RECADRAGE D'IMAGE
+═══════════════════════════════════════════ */
+let cropState = {
+  image: null,
+  canvas: null,
+  ctx: null,
+  cropBox: null,
+  aspectRatio: 1,
+  dragging: false,
+  resizing: false,
+  resizeHandle: null,
+  startX: 0,
+  startY: 0,
+  cropData: { x: 0, y: 0, width: 0, height: 0 },
+  callback: null
+};
+
+// Ratios par contexte
+const CROP_RATIOS = {
+  popup: 4/3,      // Popup d'accueil
+  category: 16/9,  // Tuiles de catégories
+  article: 4/3,    // Photos d'articles
+  event: 16/9      // Images d'événements
+};
+
+function openCropModal(file, context, callback) {
+  const modal = document.getElementById('modale-crop');
+  const canvas = document.getElementById('crop-canvas');
+  const cropBox = document.getElementById('crop-box');
+  
+  cropState.aspectRatio = CROP_RATIOS[context] || 1;
+  cropState.callback = callback;
+  cropState.canvas = canvas;
+  cropState.ctx = canvas.getContext('2d');
+  cropState.cropBox = cropBox;
+  
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      cropState.image = img;
+      
+      // Adapter le canvas à l'image
+      const containerWidth = 552; // largeur du conteneur - padding
+      const containerHeight = 400;
+      const scale = Math.min(containerWidth / img.width, containerHeight / img.height);
+      
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
+      
+      cropState.ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      
+      // Initialiser la zone de crop au centre
+      const cropWidth = canvas.width * 0.8;
+      const cropHeight = cropWidth / cropState.aspectRatio;
+      
+      cropState.cropData = {
+        x: (canvas.width - cropWidth) / 2,
+        y: (canvas.height - cropHeight) / 2,
+        width: cropWidth,
+        height: cropHeight
+      };
+      
+      updateCropBox();
+      modal.classList.remove('hidden');
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function updateCropBox() {
+  const { x, y, width, height } = cropState.cropData;
+  const box = cropState.cropBox;
+  
+  box.style.left = x + 'px';
+  box.style.top = y + 'px';
+  box.style.width = width + 'px';
+  box.style.height = height + 'px';
+}
+
+function getCroppedImage() {
+  const canvas = document.getElementById('crop-canvas');
+  const img = cropState.image;
+  const { x, y, width, height } = cropState.cropData;
+  
+  // Ratio entre le canvas affiché et l'image originale
+  const scaleX = img.width / canvas.width;
+  const scaleY = img.height / canvas.height;
+  
+  // Créer un canvas pour l'image recadrée
+  const cropCanvas = document.createElement('canvas');
+  cropCanvas.width = 800;
+  cropCanvas.height = 800 / cropState.aspectRatio;
+  
+  const ctx = cropCanvas.getContext('2d');
+  ctx.drawImage(
+    img,
+    x * scaleX, y * scaleY,
+    width * scaleX, height * scaleY,
+    0, 0,
+    cropCanvas.width, cropCanvas.height
+  );
+  
+  return cropCanvas.toDataURL('image/jpeg', 0.70);
+}
+
+// Gestion du drag de la crop box
+const cropContainer = document.querySelector('.crop-container');
+if (cropContainer) {
+  cropContainer.addEventListener('mousedown', (e) => {
+    if (e.target.classList.contains('crop-handle')) {
+      cropState.resizing = true;
+      cropState.resizeHandle = e.target.classList[1]; // crop-nw, crop-ne, etc.
+    } else if (e.target.closest('#crop-box')) {
+      cropState.dragging = true;
+    } else {
+      return;
+    }
+    
+    cropState.startX = e.clientX;
+    cropState.startY = e.clientY;
+    e.preventDefault();
+  });
+}
+
+document.addEventListener('mousemove', (e) => {
+  if (!cropState.dragging && !cropState.resizing) return;
+  
+  const dx = e.clientX - cropState.startX;
+  const dy = e.clientY - cropState.startY;
+  cropState.startX = e.clientX;
+  cropState.startY = e.clientY;
+  
+  const canvas = cropState.canvas;
+  const { x, y, width, height } = cropState.cropData;
+  
+  if (cropState.dragging) {
+    // Déplacer la box
+    cropState.cropData.x = Math.max(0, Math.min(canvas.width - width, x + dx));
+    cropState.cropData.y = Math.max(0, Math.min(canvas.height - height, y + dy));
+  } else if (cropState.resizing) {
+    // Redimensionner en gardant le ratio
+    const handle = cropState.resizeHandle;
+    
+    if (handle === 'crop-se') {
+      const newWidth = Math.max(50, width + dx);
+      const newHeight = newWidth / cropState.aspectRatio;
+      
+      if (x + newWidth <= canvas.width && y + newHeight <= canvas.height) {
+        cropState.cropData.width = newWidth;
+        cropState.cropData.height = newHeight;
+      }
+    } else if (handle === 'crop-nw') {
+      const newWidth = Math.max(50, width - dx);
+      const newHeight = newWidth / cropState.aspectRatio;
+      
+      if (x + dx >= 0 && y + dy >= 0) {
+        cropState.cropData.x = x + dx;
+        cropState.cropData.y = y + (height - newHeight);
+        cropState.cropData.width = newWidth;
+        cropState.cropData.height = newHeight;
+      }
+    } else if (handle === 'crop-ne') {
+      const newWidth = Math.max(50, width + dx);
+      const newHeight = newWidth / cropState.aspectRatio;
+      
+      if (x + newWidth <= canvas.width && y - dy >= 0) {
+        cropState.cropData.y = y + (height - newHeight);
+        cropState.cropData.width = newWidth;
+        cropState.cropData.height = newHeight;
+      }
+    } else if (handle === 'crop-sw') {
+      const newWidth = Math.max(50, width - dx);
+      const newHeight = newWidth / cropState.aspectRatio;
+      
+      if (x + dx >= 0 && y + newHeight <= canvas.height) {
+        cropState.cropData.x = x + dx;
+        cropState.cropData.width = newWidth;
+        cropState.cropData.height = newHeight;
+      }
+    }
+  }
+  
+  updateCropBox();
+});
+
+document.addEventListener('mouseup', () => {
+  cropState.dragging = false;
+  cropState.resizing = false;
+  cropState.resizeHandle = null;
+});
+
+// Boutons de la modale crop
+document.getElementById('crop-confirm')?.addEventListener('click', () => {
+  const croppedBase64 = getCroppedImage();
+  if (cropState.callback) cropState.callback(croppedBase64);
+  document.getElementById('modale-crop').classList.add('hidden');
+});
+
+document.getElementById('crop-cancel')?.addEventListener('click', () => {
+  document.getElementById('modale-crop').classList.add('hidden');
+});
+
+document.getElementById('modale-crop-close')?.addEventListener('click', () => {
+  document.getElementById('modale-crop').classList.add('hidden');
+});
+
 /* ═══════════════════════════════════════════
    HORAIRES
 ═══════════════════════════════════════════ */

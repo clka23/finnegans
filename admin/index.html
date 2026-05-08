@@ -571,6 +571,31 @@
     </div>
   </div>
 
+  <!-- Modale recadrage image -->
+  <div class="modale-overlay hidden" id="modale-crop">
+    <div class="modale-box modale-crop-box">
+      <button class="modale-close" id="modale-crop-close">✕</button>
+      <h3>Recadrer l'image</h3>
+      <p class="crop-hint">Ajustez la zone de recadrage pour un affichage optimal</p>
+      
+      <div class="crop-container">
+        <canvas id="crop-canvas"></canvas>
+        <div class="crop-overlay"></div>
+        <div class="crop-box" id="crop-box">
+          <div class="crop-handle crop-nw"></div>
+          <div class="crop-handle crop-ne"></div>
+          <div class="crop-handle crop-sw"></div>
+          <div class="crop-handle crop-se"></div>
+        </div>
+      </div>
+      
+      <div class="modale-actions">
+        <button class="btn-ghost" id="crop-cancel">Annuler</button>
+        <button class="btn-primary small" id="crop-confirm">Valider</button>
+      </div>
+    </div>
+  </div>
+
 <script type="module" src="js/scripts.js"></script>
 </body>
 </html>
