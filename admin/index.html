@@ -141,6 +141,22 @@
             <input type="text" id="new-cat-input" placeholder="Nouvelle catégorie…" />
             <button class="btn-primary small" id="btn-add-cat">Ajouter</button>
           </div>
+          
+          <!-- Upload image catégorie -->
+          <div class="field-group" style="margin-top: 1.5rem;">
+            <label>Image de la catégorie <span class="optional">(optionnel)</span></label>
+            <div class="upload-zone" id="cat-upload-zone">
+              <input type="file" id="cat-img-input" accept="image/*" style="display:none" />
+              <div class="upload-placeholder" id="cat-upload-placeholder">
+                <span class="upload-icon">📷</span>
+                <p>Cliquez ou glissez une image</p>
+                <small>Max 5 Mo — JPG, PNG, WebP</small>
+              </div>
+              <img id="cat-upload-img-preview" class="upload-img-preview hidden" alt="Aperçu" />
+              <button type="button" class="upload-remove hidden" id="cat-upload-remove">✕</button>
+            </div>
+            <button type="button" class="btn-ghost" id="cat-upload-btn" style="margin-top: 0.5rem;">Choisir une image</button>
+          </div>
         </div>
 
         <div class="panel-section">
@@ -157,6 +173,23 @@
             <label>Description / origine <span class="optional">(optionnel)</span></label>
             <input type="text" id="article-desc" placeholder="ex : Ireland — Dry Stout" />
           </div>
+          
+          <!-- Upload image article -->
+          <div class="field-group">
+            <label>Image de l'article <span class="optional">(optionnel)</span></label>
+            <div class="upload-zone" id="article-upload-zone">
+              <input type="file" id="article-img-input" accept="image/*" style="display:none" />
+              <div class="upload-placeholder" id="article-upload-placeholder">
+                <span class="upload-icon">📷</span>
+                <p>Cliquez ou glissez une image</p>
+                <small>Max 5 Mo — JPG, PNG, WebP</small>
+              </div>
+              <img id="article-upload-img-preview" class="upload-img-preview hidden" alt="Aperçu" />
+              <button type="button" class="upload-remove hidden" id="article-upload-remove">✕</button>
+            </div>
+            <button type="button" class="btn-ghost" id="article-upload-btn" style="margin-top: 0.5rem;">Choisir une image</button>
+          </div>
+          
           <div class="field-group">
             <label>Variantes de prix</label>
             <div id="variantes-list"></div>
@@ -196,6 +229,23 @@
             <label>Description <span class="optional">(optionnel)</span></label>
             <textarea id="event-desc" rows="3" placeholder="ex : France vs Irlande — Grand écran, ambiance garantie."></textarea>
           </div>
+          
+          <!-- Upload image événement -->
+          <div class="field-group">
+            <label>Image de l'événement <span class="optional">(optionnel)</span></label>
+            <div class="upload-zone" id="event-upload-zone">
+              <input type="file" id="event-img-input" accept="image/*" style="display:none" />
+              <div class="upload-placeholder" id="event-upload-placeholder">
+                <span class="upload-icon">📷</span>
+                <p>Cliquez ou glissez une image</p>
+                <small>Max 5 Mo — JPG, PNG, WebP</small>
+              </div>
+              <img id="event-upload-img-preview" class="upload-img-preview hidden" alt="Aperçu" />
+              <button type="button" class="upload-remove hidden" id="event-upload-remove">✕</button>
+            </div>
+            <button type="button" class="btn-ghost" id="event-upload-btn" style="margin-top: 0.5rem;">Choisir une image</button>
+          </div>
+          
           <div class="field-group">
             <label>Tag</label>
             <input type="text" id="event-tag" placeholder="ex : Sport, Musique live, Jeux…" />

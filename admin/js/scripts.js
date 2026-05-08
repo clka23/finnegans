@@ -348,11 +348,29 @@ document.getElementById('btn-add-cat').addEventListener('click', async () => {
     }, -1);
     const nouvelOrdre = maxOrdre + 1;
     
+    let imageBase64 = null;
+    if (catImageFile) {
+      imageBase64 = await compressImage(catImageFile, 800, 600);
+      catImageFile = null;
+    } else if (catUploadImgPreview.src && !catUploadImgPreview.classList.contains('hidden')) {
+      imageBase64 = catUploadImgPreview.src;
+    }
+    
     await addDoc(collection(db, 'categories'), { 
       nom: val,
-      ordre: nouvelOrdre
+      ordre: nouvelOrdre,
+      imageBase64: imageBase64
     });
+    
     input.value = '';
+    // Réinitialiser l'upload d'image
+    catImgInput.value = '';
+    catImageFile = null;
+    catUploadImgPreview.src = '';
+    catUploadImgPreview.classList.add('hidden');
+    catUploadPlaceholder.classList.remove('hidden');
+    catUploadRemoveBtn.classList.add('hidden');
+    
     await loadCategories();
   } catch (err) {
     console.error('Erreur ajout catégorie :', err);
@@ -474,18 +492,37 @@ document.getElementById('btn-save-article').addEventListener('click', async () =
   }
 
   try {
+    let imageBase64 = null;
+    if (articleImageFile) {
+      imageBase64 = await compressImage(articleImageFile, 800, 600);
+      articleImageFile = null;
+    } else if (articleUploadImgPreview.src && !articleUploadImgPreview.classList.contains('hidden')) {
+      imageBase64 = articleUploadImgPreview.src;
+    }
+    
     await addDoc(collection(db, 'articles'), {
       categorieId: catId,
       nom,
       description: desc,
       variantes,
+      imageBase64: imageBase64,
       createdAt: new Date()
     });
+    
     feedback.textContent = '✓ Article ajouté.';
     feedback.className = 'form-feedback success';
     document.getElementById('article-nom').value  = '';
     document.getElementById('article-desc').value = '';
     document.getElementById('variantes-list').innerHTML = '';
+    
+    // Réinitialiser l'upload d'image
+    articleImgInput.value = '';
+    articleImageFile = null;
+    articleUploadImgPreview.src = '';
+    articleUploadImgPreview.classList.add('hidden');
+    articleUploadPlaceholder.classList.remove('hidden');
+    articleUploadRemoveBtn.classList.add('hidden');
+    
     addVariante();
     await loadArticles();
     setTimeout(() => feedback.textContent = '', 3000);
@@ -584,9 +621,18 @@ document.getElementById('btn-save-event').addEventListener('click', async () => 
   const moisCap = mois.charAt(0).toUpperCase() + mois.slice(1);
 
   try {
+    let imageBase64 = null;
+    if (eventImageFile) {
+      imageBase64 = await compressImage(eventImageFile, 800, 600);
+      eventImageFile = null;
+    } else if (eventUploadImgPreview.src && !eventUploadImgPreview.classList.contains('hidden')) {
+      imageBase64 = eventUploadImgPreview.src;
+    }
+    
     await addDoc(collection(db, 'evenements'), {
       date, jour, mois: moisCap, titre,
       description: desc, tag,
+      imageBase64: imageBase64,
       reservation: { active: resaActive, paid: resaPaid, max: resaMax, count: 0 },
       createdAt: new Date()
     });
@@ -598,6 +644,15 @@ document.getElementById('btn-save-event').addEventListener('click', async () => 
     document.getElementById('event-titre').value = '';
     document.getElementById('event-desc').value  = '';
     document.getElementById('event-tag').value   = '';
+    
+    // Réinitialiser l'upload d'image
+    eventImgInput.value = '';
+    eventImageFile = null;
+    eventUploadImgPreview.src = '';
+    eventUploadImgPreview.classList.add('hidden');
+    eventUploadPlaceholder.classList.remove('hidden');
+    eventUploadRemoveBtn.classList.add('hidden');
+    
     eventResaToggle.checked = false;
     eventResaPaid.checked   = false;
     eventResaOptions.classList.add('hidden');
@@ -622,6 +677,30 @@ const uploadPlaceholder = document.getElementById('upload-placeholder');
 const uploadImgPreview  = document.getElementById('upload-img-preview');
 const uploadRemoveBtn   = document.getElementById('upload-remove');
 let popupImageFile      = null; // Stocke le fichier à uploader
+
+// Variables pour upload catégorie
+const catImgInput         = document.getElementById('cat-img-input');
+const catUploadZone       = document.getElementById('cat-upload-zone');
+const catUploadPlaceholder = document.getElementById('cat-upload-placeholder');
+const catUploadImgPreview = document.getElementById('cat-upload-img-preview');
+const catUploadRemoveBtn  = document.getElementById('cat-upload-remove');
+let catImageFile          = null;
+
+// Variables pour upload article
+const articleImgInput         = document.getElementById('article-img-input');
+const articleUploadZone       = document.getElementById('article-upload-zone');
+const articleUploadPlaceholder = document.getElementById('article-upload-placeholder');
+const articleUploadImgPreview = document.getElementById('article-upload-img-preview');
+const articleUploadRemoveBtn  = document.getElementById('article-upload-remove');
+let articleImageFile          = null;
+
+// Variables pour upload événement
+const eventImgInput         = document.getElementById('event-img-input');
+const eventUploadZone       = document.getElementById('event-upload-zone');
+const eventUploadPlaceholder = document.getElementById('event-upload-placeholder');
+const eventUploadImgPreview = document.getElementById('event-upload-img-preview');
+const eventUploadRemoveBtn  = document.getElementById('event-upload-remove');
+let eventImageFile          = null;
 
 document.getElementById('upload-btn').addEventListener('click', () => popupImgInput.click());
 uploadPlaceholder.addEventListener('click', () => popupImgInput.click());
@@ -663,6 +742,139 @@ uploadRemoveBtn.addEventListener('click', () => {
   uploadPlaceholder.classList.remove('hidden');
   uploadRemoveBtn.classList.add('hidden');
 });
+
+/* ─────────────────────────────────────────────
+   UPLOAD IMAGE — CATÉGORIE
+───────────────────────────────────────────── */
+document.getElementById('cat-upload-btn').addEventListener('click', () => catImgInput.click());
+catUploadPlaceholder.addEventListener('click', () => catImgInput.click());
+
+catImgInput.addEventListener('change', () => {
+  const file = catImgInput.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { alert('Image trop lourde. Maximum : 5 Mo.'); return; }
+  catImageFile = file;
+  const reader = new FileReader();
+  reader.onload = e => {
+    catUploadImgPreview.src = e.target.result;
+    catUploadImgPreview.classList.remove('hidden');
+    catUploadPlaceholder.classList.add('hidden');
+    catUploadRemoveBtn.classList.remove('hidden');
+  };
+  reader.readAsDataURL(file);
+});
+
+catUploadZone.addEventListener('dragover', e => { e.preventDefault(); catUploadZone.style.borderColor = 'var(--gold)'; });
+catUploadZone.addEventListener('dragleave', () => { catUploadZone.style.borderColor = ''; });
+catUploadZone.addEventListener('drop', e => {
+  e.preventDefault();
+  catUploadZone.style.borderColor = '';
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) {
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    catImgInput.files = dt.files;
+    catImgInput.dispatchEvent(new Event('change'));
+  }
+});
+
+catUploadRemoveBtn.addEventListener('click', () => {
+  catImgInput.value = '';
+  catImageFile = null;
+  catUploadImgPreview.src = '';
+  catUploadImgPreview.classList.add('hidden');
+  catUploadPlaceholder.classList.remove('hidden');
+  catUploadRemoveBtn.classList.add('hidden');
+});
+
+/* ─────────────────────────────────────────────
+   UPLOAD IMAGE — ARTICLE
+───────────────────────────────────────────── */
+document.getElementById('article-upload-btn').addEventListener('click', () => articleImgInput.click());
+articleUploadPlaceholder.addEventListener('click', () => articleImgInput.click());
+
+articleImgInput.addEventListener('change', () => {
+  const file = articleImgInput.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { alert('Image trop lourde. Maximum : 5 Mo.'); return; }
+  articleImageFile = file;
+  const reader = new FileReader();
+  reader.onload = e => {
+    articleUploadImgPreview.src = e.target.result;
+    articleUploadImgPreview.classList.remove('hidden');
+    articleUploadPlaceholder.classList.add('hidden');
+    articleUploadRemoveBtn.classList.remove('hidden');
+  };
+  reader.readAsDataURL(file);
+});
+
+articleUploadZone.addEventListener('dragover', e => { e.preventDefault(); articleUploadZone.style.borderColor = 'var(--gold)'; });
+articleUploadZone.addEventListener('dragleave', () => { articleUploadZone.style.borderColor = ''; });
+articleUploadZone.addEventListener('drop', e => {
+  e.preventDefault();
+  articleUploadZone.style.borderColor = '';
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) {
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    articleImgInput.files = dt.files;
+    articleImgInput.dispatchEvent(new Event('change'));
+  }
+});
+
+articleUploadRemoveBtn.addEventListener('click', () => {
+  articleImgInput.value = '';
+  articleImageFile = null;
+  articleUploadImgPreview.src = '';
+  articleUploadImgPreview.classList.add('hidden');
+  articleUploadPlaceholder.classList.remove('hidden');
+  articleUploadRemoveBtn.classList.add('hidden');
+});
+
+/* ─────────────────────────────────────────────
+   UPLOAD IMAGE — ÉVÉNEMENT
+───────────────────────────────────────────── */
+document.getElementById('event-upload-btn').addEventListener('click', () => eventImgInput.click());
+eventUploadPlaceholder.addEventListener('click', () => eventImgInput.click());
+
+eventImgInput.addEventListener('change', () => {
+  const file = eventImgInput.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { alert('Image trop lourde. Maximum : 5 Mo.'); return; }
+  eventImageFile = file;
+  const reader = new FileReader();
+  reader.onload = e => {
+    eventUploadImgPreview.src = e.target.result;
+    eventUploadImgPreview.classList.remove('hidden');
+    eventUploadPlaceholder.classList.add('hidden');
+    eventUploadRemoveBtn.classList.remove('hidden');
+  };
+  reader.readAsDataURL(file);
+});
+
+eventUploadZone.addEventListener('dragover', e => { e.preventDefault(); eventUploadZone.style.borderColor = 'var(--gold)'; });
+eventUploadZone.addEventListener('dragleave', () => { eventUploadZone.style.borderColor = ''; });
+eventUploadZone.addEventListener('drop', e => {
+  e.preventDefault();
+  eventUploadZone.style.borderColor = '';
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) {
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    eventImgInput.files = dt.files;
+    eventImgInput.dispatchEvent(new Event('change'));
+  }
+});
+
+eventUploadRemoveBtn.addEventListener('click', () => {
+  eventImgInput.value = '';
+  eventImageFile = null;
+  eventUploadImgPreview.src = '';
+  eventUploadImgPreview.classList.add('hidden');
+  eventUploadPlaceholder.classList.remove('hidden');
+  eventUploadRemoveBtn.classList.add('hidden');
+});
+
 
 const popupResaToggle  = document.getElementById('popup-resa-active');
 const popupResaPaid    = document.getElementById('popup-resa-paid');
