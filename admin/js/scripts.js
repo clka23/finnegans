@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════
-   FINNEGAN'S — ADMIN scripts.js v4.1
-   Firebase Auth + Firestore (Correctif affichage articles)
+   FINNEGAN'S — ADMIN scripts.js v4.2
+   Firebase Auth + Firestore + Storage (Upload image popup)
 ═══════════════════════════════════════════ */
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
@@ -27,6 +27,13 @@ import {
   query,
   orderBy
 } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+import {
+  getStorage,
+  ref,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject
+} from "https://www.gstatic.com/firebasejs/12.13.0/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyClZPF7ESoGwCqdFuBgWXyTcTJva4Y-a7Q",
@@ -37,9 +44,10 @@ const firebaseConfig = {
   appId: "1:675354405806:web:28f177765a43ba5a6b363f"
 };
 
-const app  = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db   = getFirestore(app);
+const app     = initializeApp(firebaseConfig);
+const auth    = getAuth(app);
+const db      = getFirestore(app);
+const storage = getStorage(app);
 
 
 /* ═══════════════════════════════════════════
@@ -89,6 +97,7 @@ onAuthStateChanged(auth, user => {
     initReservationFeature();
     loadCategories();
     loadEvenements();
+    loadPopupData(); // Charge les données de la popup existante
   } else {
     adminScreen.classList.add('hidden');
     loginScreen.classList.remove('hidden');
@@ -157,9 +166,11 @@ function openPanel(name) {
   panelOverlay.classList.add('active');
   document.body.style.overflow = 'hidden';
 
-  // 🔥 Charger les articles quand on ouvre le panneau Carte
   if (name === 'carte') {
     loadArticles();
+  }
+  if (name === 'popup') {
+    loadPopupData();
   }
 }
 
@@ -301,6 +312,17 @@ document.getElementById('rename-cat-input').addEventListener('keydown', e => {
 /* ═══════════════════════════════════════════
    CARTE — ARTICLES
 ═══════════════════════════════════════════ */
+function addVariante(label = '', price = '') {
+  const row = document.createElement('div');
+  row.className = 'variante-row';
+  row.innerHTML = `
+    <input type="text" class="v-label" placeholder="ex : Pinte 50cl" value="${label}" />
+    <input type="text" class="v-price" placeholder="ex : 7,50 €" value="${price}" />
+    <button class="btn-remove-variante" title="Supprimer">✕</button>
+  `;
+  row.querySelector('.btn-remove-variante').addEventListener('click', () => row.remove());
+  document.getElementById('variantes-list').appendChild(row);
+}
 
 async function loadArticles() {
   const container = document.querySelector('#panel-carte .panel-section:last-child');
@@ -316,9 +338,9 @@ async function loadArticles() {
       return;
     }
 
-    snap.docs.forEach(articleDoc => {  // ✅ RENOMMÉ de "doc" à "articleDoc"
+    snap.docs.forEach(articleDoc => {
       const article = articleDoc.data();
-      const articleId = articleDoc.id;  // ✅ ID stocké séparément
+      const articleId = articleDoc.id;
       const cat = categories.find(c => c.id === article.categorieId);
       const catName = cat ? cat.nom : 'Sans catégorie';
 
@@ -333,14 +355,13 @@ async function loadArticles() {
         <button class="tag-btn delete-article" data-id="${articleId}" title="Supprimer">✕</button>
       `;
 
-      // Gestionnaire pour supprimer un article
       div.querySelector('.delete-article').addEventListener('click', async (e) => {
         e.stopPropagation();
-        const idToDelete = articleId;  // ✅ Utilise l'ID stocké
+        const idToDelete = articleId;
         if (!confirm(`Supprimer l'article "${article.nom}" ?`)) return;
         try {
-          await deleteDoc(doc(db, 'articles', idToDelete));  // ✅ Utilise deleteDoc importé, avec le bon ID
-          await loadArticles(); // Recharge la liste après suppression
+          await deleteDoc(doc(db, 'articles', idToDelete));
+          await loadArticles();
         } catch (err) {
           console.error('Erreur suppression article :', err);
           alert('Erreur lors de la suppression.');
@@ -355,6 +376,51 @@ async function loadArticles() {
     container.innerHTML += '<p class="panel-placeholder" style="color:#e57373">Erreur de chargement.</p>';
   }
 }
+
+document.getElementById('btn-add-variante').addEventListener('click', () => addVariante());
+addVariante();
+
+document.getElementById('btn-save-article').addEventListener('click', async () => {
+  const feedback = document.getElementById('article-feedback');
+  const nom   = document.getElementById('article-nom').value.trim();
+  const catId = document.getElementById('article-cat').value;
+  const desc  = document.getElementById('article-desc').value.trim();
+
+  const variantes = [];
+  document.querySelectorAll('.variante-row').forEach(row => {
+    const l = row.querySelector('.v-label').value.trim();
+    const p = row.querySelector('.v-price').value.trim();
+    if (l && p) variantes.push({ label: l, price: p });
+  });
+
+  if (!nom || !catId) {
+    feedback.textContent = 'Le nom et la catégorie sont obligatoires.';
+    feedback.className = 'form-feedback error';
+    return;
+  }
+
+  try {
+    await addDoc(collection(db, 'articles'), {
+      categorieId: catId,
+      nom,
+      description: desc,
+      variantes,
+      createdAt: new Date()
+    });
+    feedback.textContent = '✓ Article ajouté.';
+    feedback.className = 'form-feedback success';
+    document.getElementById('article-nom').value  = '';
+    document.getElementById('article-desc').value = '';
+    document.getElementById('variantes-list').innerHTML = '';
+    addVariante();
+    await loadArticles();
+    setTimeout(() => feedback.textContent = '', 3000);
+  } catch (err) {
+    feedback.textContent = 'Erreur lors de l\'ajout.';
+    feedback.className = 'form-feedback error';
+    console.error(err);
+  }
+});
 
 
 /* ═══════════════════════════════════════════
@@ -474,13 +540,14 @@ document.getElementById('btn-save-event').addEventListener('click', async () => 
 
 
 /* ═══════════════════════════════════════════
-   POPUP — UPLOAD IMAGE
+   POPUP — UPLOAD IMAGE + SAUVEGARDE STORAGE
 ═══════════════════════════════════════════ */
 const popupImgInput     = document.getElementById('popup-img-input');
 const uploadZone        = document.getElementById('upload-zone');
 const uploadPlaceholder = document.getElementById('upload-placeholder');
 const uploadImgPreview  = document.getElementById('upload-img-preview');
 const uploadRemoveBtn   = document.getElementById('upload-remove');
+let popupImageFile      = null; // Stocke le fichier à uploader
 
 document.getElementById('upload-btn').addEventListener('click', () => popupImgInput.click());
 uploadPlaceholder.addEventListener('click', () => popupImgInput.click());
@@ -489,6 +556,7 @@ popupImgInput.addEventListener('change', () => {
   const file = popupImgInput.files[0];
   if (!file) return;
   if (file.size > 5 * 1024 * 1024) { alert('Image trop lourde. Maximum : 5 Mo.'); return; }
+  popupImageFile = file;
   const reader = new FileReader();
   reader.onload = e => {
     uploadImgPreview.src = e.target.result;
@@ -515,6 +583,7 @@ uploadZone.addEventListener('drop', e => {
 
 uploadRemoveBtn.addEventListener('click', () => {
   popupImgInput.value = '';
+  popupImageFile = null;
   uploadImgPreview.src = '';
   uploadImgPreview.classList.add('hidden');
   uploadPlaceholder.classList.remove('hidden');
@@ -537,6 +606,35 @@ popupResaPaid.addEventListener('change', () => {
   }
 });
 
+// Charge les données de la popup existante
+async function loadPopupData() {
+  try {
+    const snap = await getDoc(doc(db, 'config', 'popup'));
+    if (!snap.exists()) return;
+
+    const data = snap.data();
+    document.getElementById('popup-active').checked = data.active || false;
+    document.getElementById('popup-titre').value = data.titre || '';
+    document.getElementById('popup-desc').value = data.description || '';
+
+    if (data.imageUrl) {
+      uploadImgPreview.src = data.imageUrl;
+      uploadImgPreview.classList.remove('hidden');
+      uploadPlaceholder.classList.add('hidden');
+      uploadRemoveBtn.classList.remove('hidden');
+    }
+
+    if (data.reservation) {
+      popupResaToggle.checked = data.reservation.active || false;
+      popupResaPaid.checked = data.reservation.paid || false;
+      popupResaOptions.classList.toggle('hidden', !data.reservation.active);
+      document.getElementById('popup-resa-max').value = data.reservation.max || '';
+    }
+  } catch (err) {
+    console.error('Erreur chargement popup :', err);
+  }
+}
+
 document.getElementById('btn-save-popup').addEventListener('click', async () => {
   const feedback   = document.getElementById('popup-feedback');
   const titre      = document.getElementById('popup-titre').value.trim();
@@ -552,12 +650,29 @@ document.getElementById('btn-save-popup').addEventListener('click', async () => 
     return;
   }
 
+  feedback.textContent = 'Enregistrement en cours…';
+  feedback.className = 'form-feedback';
+
   try {
+    let imageUrl = uploadImgPreview.src && !uploadImgPreview.classList.contains('hidden') 
+                   ? uploadImgPreview.src 
+                   : null;
+
+    // Upload de la nouvelle image vers Firebase Storage
+    if (popupImageFile) {
+      const storageRef = ref(storage, `popup/${Date.now()}_${popupImageFile.name}`);
+      const snapshot = await uploadBytes(storageRef, popupImageFile);
+      imageUrl = await getDownloadURL(snapshot.ref);
+      popupImageFile = null;
+    }
+
     await setDoc(doc(db, 'config', 'popup'), {
       active, titre, description: desc,
+      imageUrl: imageUrl,
       reservation: { active: resaActive, paid: resaPaid, max: resaMax },
       updatedAt: new Date()
     });
+
     feedback.textContent = '✓ Popup enregistrée.';
     feedback.className = 'form-feedback success';
     setTimeout(() => feedback.textContent = '', 3000);
@@ -567,8 +682,6 @@ document.getElementById('btn-save-popup').addEventListener('click', async () => 
     console.error(err);
   }
 });
-
-
 /* ═══════════════════════════════════════════
    HORAIRES
 ═══════════════════════════════════════════ */
@@ -777,6 +890,7 @@ function sendOtp(channel) {
   document.getElementById('otp-step-2').classList.remove('hidden');
   setTimeout(() => document.querySelector('.otp-digit').focus(), 80);
 }
+
 document.querySelectorAll('.otp-digit').forEach((input, i, all) => {
   input.addEventListener('input', () => {
     input.value = input.value.replace(/\D/g, '').slice(0, 1);
@@ -830,7 +944,7 @@ document.getElementById('otp-validate').addEventListener('click', async () => {
         setTimeout(() => fb.textContent = '', 3000);
       } catch (err) {
         fb.textContent = 'Erreur lors de la mise à jour.';
-        fb.className = 'form-feedback error';
+        fb.className = 'form-fedback error';
         console.error(err);
       }
     }
