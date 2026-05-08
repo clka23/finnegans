@@ -138,10 +138,11 @@ ul { list-style: none; }
 .hero-bg {
   position: absolute;
   inset: 0;
-  background-image: url('https://images.unsplash.com/photo-1572116469696-31de0f17cc34?w=1600&q=80');
+  background-image: url('../img/finnegans.webp');
   background-size: cover;
   background-position: center;
   transform: scale(1.1);
+  filter: blur(3px);
 }
 
 .hero-overlay {
