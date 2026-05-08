@@ -14,23 +14,30 @@ function raf(time) {
 requestAnimationFrame(raf);
 
 // Ancres nav → smooth scroll via Lenis
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-  anchor.addEventListener('click', e => {
-    e.preventDefault();
-    const href = anchor.getAttribute('href');
+// Utilise la délégation d'événements pour gérer les liens dynamiques
+document.addEventListener('click', e => {
+  const anchor = e.target.closest('a[href^="#"]');
+  if (!anchor) return;
 
-    // Logo → haut de page
-    if (href === '#') {
-      lenis.scrollTo(0);
-    } else {
-      const target = document.querySelector(href);
-      if (target) lenis.scrollTo(target, { offset: -70 });
-    }
+  e.preventDefault();
+  const href = anchor.getAttribute('href');
 
-    // Ferme le menu mobile si ouvert
-    navLinks.classList.remove('open');
-    navbar.classList.remove('menu-open');
-  });
+  // Logo → haut de page
+  if (href === '#') {
+    lenis.scrollTo(0);
+  } else {
+    const target = document.querySelector(href);
+    if (target) lenis.scrollTo(target, { offset: -70 });
+  }
+
+  // Ferme le menu mobile si ouvert
+  const navLinks = document.getElementById('nav-links');
+  const navbar = document.getElementById('navbar');
+  const overlay = document.getElementById('menu-overlay');
+  
+  if (navLinks) navLinks.classList.remove('open');
+  if (navbar) navbar.classList.remove('menu-open');
+  if (overlay) overlay.classList.remove('active');
 });
 
 
@@ -51,22 +58,34 @@ gsap.to('.hero-bg', {
   }
 });
 
-// Scale images au scroll
-document.querySelectorAll('.drink-img-wrap img').forEach(img => {
-  gsap.fromTo(img,
-    { scale: 1.08 },
-    {
-      scale: 1,
-      ease: 'none',
-      scrollTrigger: {
-        trigger: img,
-        start: 'top bottom',
-        end: 'bottom top',
-        scrub: 1,
-      }
+// Observer pour ajouter les animations GSAP aux images dynamiquement chargées
+const gsapObserver = new MutationObserver(() => {
+  document.querySelectorAll('.drink-img-wrap img').forEach(img => {
+    // Vérifier si l'image n'a pas déjà un ScrollTrigger
+    if (!img.dataset.gsapInit) {
+      img.dataset.gsapInit = 'true';
+      gsap.fromTo(img,
+        { scale: 1.08 },
+        {
+          scale: 1,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: img,
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: 1,
+          }
+        }
+      );
     }
-  );
+  });
 });
+
+// Observer le conteneur des sections dynamiques
+const dynamicSections = document.getElementById('dynamic-sections');
+if (dynamicSections) {
+  gsapObserver.observe(dynamicSections, { childList: true, subtree: true });
+}
 
 
 /* ═══════════════════════════════════════════
@@ -83,11 +102,20 @@ const revealObserver = new IntersectionObserver((entries) => {
   });
 }, { threshold: 0.12 });
 
-document.querySelectorAll('.drink-card, .menu-category, .event-card, .info-block, .tile').forEach((el, i) => {
-  el.dataset.delay = i % 3;
+// Observer initial
+document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+// Observer les nouveaux éléments reveal ajoutés dynamiquement
+const revealMutationObserver = new MutationObserver(() => {
+  document.querySelectorAll('.reveal:not(.visible)').forEach(el => {
+    if (!el.closest('#hero')) { // Le hero est déjà visible
+      revealObserver.observe(el);
+    }
+  });
 });
 
-document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+// Observer tout le body pour les ajouts dynamiques
+revealMutationObserver.observe(document.body, { childList: true, subtree: true });
 
 
 /* ═══════════════════════════════════════════
@@ -123,13 +151,11 @@ overlay.addEventListener('click', () => {
   overlay.classList.remove('active');
 });
 
-// Ferme aussi via les liens
-document.querySelectorAll('#nav-links a').forEach(link => {
-  link.addEventListener('click', () => {
+// Ferme aussi via les liens (délégation d'événements pour les liens dynamiques)
+navLinks.addEventListener('click', (e) => {
+  if (e.target.tagName === 'A') {
     navLinks.classList.remove('open');
     navbar.classList.remove('menu-open');
     overlay.classList.remove('active');
-  });
+  }
 });
-
-

@@ -27,10 +27,7 @@
       <span></span><span></span><span></span>
     </button>
     <ul class="nav-links" id="nav-links">
-      <li><a href="#bieres">Bières</a></li>
-      <li><a href="#cocktails">Cocktails</a></li>
-      <li><a href="#softs">Softs</a></li>
-      <li><a href="#restauration">Restauration</a></li>
+      <!-- Les catégories seront insérées dynamiquement ici -->
       <li><a href="#evenements">Événements</a></li>
       <li><a href="#infos">Infos</a></li>
     </ul>
@@ -68,334 +65,30 @@
       <div class="section-divider"></div>
     </div>
 
-    <div class="tiles-grid">
-      <a href="#bieres" class="tile reveal">
-        <div class="tile-bg" style="background-image:url('https://images.unsplash.com/photo-1608270586620-248524c67de9?w=800&q=80')"></div>
-        <div class="tile-overlay"></div>
-        <div class="tile-content">
-          <h3>Bières</h3>
-          <p>Pression & bouteilles irlandaises</p>
-        </div>
-      </a>
-
-      <a href="#cocktails" class="tile reveal">
-        <div class="tile-bg" style="background-image:url('https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=800&q=80')"></div>
-        <div class="tile-overlay"></div>
-        <div class="tile-content">
-          <h3>Cocktails</h3>
-          <p>Classiques & créations maison</p>
-        </div>
-      </a>
-
-      <a href="#softs" class="tile reveal">
-        <div class="tile-bg" style="background-image:url('https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=800&q=80')"></div>
-        <div class="tile-overlay"></div>
-        <div class="tile-content">
-          <h3>Softs</h3>
-          <p>Jus, sodas & sans alcool</p>
-        </div>
-      </a>
-
-      <a href="#restauration" class="tile reveal">
-        <div class="tile-bg" style="background-image:url('https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&q=80')"></div>
-        <div class="tile-overlay"></div>
-        <div class="tile-content">
-          <h3>Restauration</h3>
-          <p>Plats, burgers & snacks maison</p>
-        </div>
-      </a>
+    <div class="tiles-grid" id="categories-tiles">
+      <!-- Les tuiles de catégories seront générées dynamiquement ici -->
     </div>
   </section>
 
   <!-- ═══════════════════════════════════════════
-       BIÈRES
+       SECTIONS CATÉGORIES DYNAMIQUES
+       Les sections seront insérées ici par Firebase
   ═══════════════════════════════════════════ -->
-  <section id="bieres">
-    <div class="section-header reveal">
-      <span class="section-label">Pression & bouteilles</span>
-      <h2>Bières</h2>
-      <div class="section-divider"></div>
-    </div>
-
-    <div class="drinks-grid">
-
-      <article class="drink-card reveal">
-        <div class="drink-img-wrap">
-          <img src="https://images.unsplash.com/photo-1608270586620-248524c67de9?w=600&q=80" alt="Guinness" loading="lazy" />
-        </div>
-        <div class="drink-info">
-          <h3>Guinness</h3>
-          <p class="drink-origin">Ireland — Dry Stout</p>
-          <ul class="drink-variants">
-            <li><span>Pinte 50cl</span><span class="price">7,50 €</span></li>
-            <li><span>Demi 25cl</span><span class="price">4,50 €</span></li>
-          </ul>
-        </div>
-      </article>
-
-      <article class="drink-card reveal">
-        <div class="drink-img-wrap">
-          <img src="https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=600&q=80" alt="Kilkenny" loading="lazy" />
-        </div>
-        <div class="drink-info">
-          <h3>Kilkenny</h3>
-          <p class="drink-origin">Ireland — Irish Red Ale</p>
-          <ul class="drink-variants">
-            <li><span>Pinte 50cl</span><span class="price">7,50 €</span></li>
-            <li><span>Demi 25cl</span><span class="price">4,50 €</span></li>
-          </ul>
-        </div>
-      </article>
-
-      <article class="drink-card reveal">
-        <div class="drink-img-wrap">
-          <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80" alt="Grimbergen" loading="lazy" />
-        </div>
-        <div class="drink-info">
-          <h3>Grimbergen</h3>
-          <p class="drink-origin">Belgique — Blonde d'Abbaye</p>
-          <ul class="drink-variants">
-            <li><span>Pinte 50cl</span><span class="price">8,00 €</span></li>
-            <li><span>Demi 25cl</span><span class="price">5,00 €</span></li>
-          </ul>
-        </div>
-      </article>
-
-      <article class="drink-card reveal">
-        <div class="drink-img-wrap">
-          <img src="https://images.unsplash.com/photo-1600788886242-5c96aabe3757?w=600&q=80" alt="Leffe" loading="lazy" />
-        </div>
-        <div class="drink-info">
-          <h3>Leffe Blonde</h3>
-          <p class="drink-origin">Belgique — Bière d'Abbaye</p>
-          <ul class="drink-variants">
-            <li><span>Pinte 50cl</span><span class="price">7,50 €</span></li>
-            <li><span>Demi 25cl</span><span class="price">4,50 €</span></li>
-            <li><span>Bouteille 33cl</span><span class="price">5,00 €</span></li>
-          </ul>
-        </div>
-      </article>
-
-    </div>
-  </section>
-
-  <!-- ═══════════════════════════════════════════
-       COCKTAILS
-  ═══════════════════════════════════════════ -->
-  <section id="cocktails">
-    <div class="section-header reveal">
-      <span class="section-label">Classiques & créations</span>
-      <h2>Cocktails</h2>
-      <div class="section-divider"></div>
-    </div>
-
-    <div class="drinks-grid">
-
-      <article class="drink-card reveal">
-        <div class="drink-img-wrap">
-          <img src="https://images.unsplash.com/photo-1527281400683-1aae777175f8?w=600&q=80" alt="Irish Mule" loading="lazy" />
-        </div>
-        <div class="drink-info">
-          <h3>Irish Mule</h3>
-          <p class="drink-origin">Jameson · Ginger Beer · Citron vert</p>
-          <ul class="drink-variants">
-            <li><span>20cl</span><span class="price">9,00 €</span></li>
-          </ul>
-        </div>
-      </article>
-
-      <article class="drink-card reveal">
-        <div class="drink-img-wrap">
-          <img src="https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=600&q=80" alt="Mojito" loading="lazy" />
-        </div>
-        <div class="drink-info">
-          <h3>Mojito</h3>
-          <p class="drink-origin">Rhum blanc · Menthe · Citron · Sucre de canne</p>
-          <ul class="drink-variants">
-            <li><span>20cl</span><span class="price">9,00 €</span></li>
-            <li><span>Virgin</span><span class="price">6,50 €</span></li>
-          </ul>
-        </div>
-      </article>
-
-      <article class="drink-card reveal">
-        <div class="drink-img-wrap">
-          <img src="https://images.unsplash.com/photo-1563227812-0ea4c22e6cc8?w=600&q=80" alt="Old Fashioned" loading="lazy" />
-        </div>
-        <div class="drink-info">
-          <h3>Old Fashioned</h3>
-          <p class="drink-origin">Bourbon · Angostura · Sucre · Orange</p>
-          <ul class="drink-variants">
-            <li><span>10cl</span><span class="price">10,00 €</span></li>
-          </ul>
-        </div>
-      </article>
-
-      <article class="drink-card reveal">
-        <div class="drink-img-wrap">
-          <img src="https://images.unsplash.com/photo-1574056761589-a2b80bc17b64?w=600&q=80" alt="Irish Coffee" loading="lazy" />
-        </div>
-        <div class="drink-info">
-          <h3>Irish Coffee</h3>
-          <p class="drink-origin">Jameson · Café · Crème fouettée</p>
-          <ul class="drink-variants">
-            <li><span>20cl</span><span class="price">8,00 €</span></li>
-          </ul>
-        </div>
-      </article>
-
-    </div>
-  </section>
-
-  <!-- ═══════════════════════════════════════════
-       SOFTS
-  ═══════════════════════════════════════════ -->
-  <section id="softs">
-    <div class="section-header reveal">
-      <span class="section-label">Sans alcool</span>
-      <h2>Softs</h2>
-      <div class="section-divider"></div>
-    </div>
-
-    <div class="menu-grid">
-      <div class="menu-category reveal">
-        <h3 class="menu-cat-title">🥤 Sodas</h3>
-        <ul class="menu-list">
-          <li><span>Coca-Cola 33cl</span><span class="price">3,50 €</span></li>
-          <li><span>Coca-Cola Zero 33cl</span><span class="price">3,50 €</span></li>
-          <li><span>Limonade 25cl</span><span class="price">3,00 €</span></li>
-          <li><span>Ginger Beer 25cl</span><span class="price">4,00 €</span></li>
-          <li><span>Schweppes Agrumes 25cl</span><span class="price">3,50 €</span></li>
-        </ul>
-      </div>
-
-      <div class="menu-category reveal">
-        <h3 class="menu-cat-title">🧃 Jus & Eaux</h3>
-        <ul class="menu-list">
-          <li><span>Jus d'orange frais</span><span class="price">4,50 €</span></li>
-          <li><span>Jus de pomme</span><span class="price">3,50 €</span></li>
-          <li><span>Jus de cranberry</span><span class="price">3,50 €</span></li>
-          <li><span>Eau plate 50cl</span><span class="price">2,50 €</span></li>
-          <li><span>Eau gazeuse 50cl</span><span class="price">2,50 €</span></li>
-        </ul>
-      </div>
-
-      <div class="menu-category reveal">
-        <h3 class="menu-cat-title">☕ Chauds</h3>
-        <ul class="menu-list">
-          <li><span>Café expresso</span><span class="price">2,50 €</span></li>
-          <li><span>Café allongé</span><span class="price">3,00 €</span></li>
-          <li><span>Thé / Infusion</span><span class="price">3,00 €</span></li>
-          <li><span>Chocolat chaud</span><span class="price">4,00 €</span></li>
-        </ul>
-      </div>
-    </div>
-  </section>
-
-  <!-- ═══════════════════════════════════════════
-       RESTAURATION
-  ═══════════════════════════════════════════ -->
-  <section id="restauration">
-    <div class="section-header reveal">
-      <span class="section-label">Cuisine maison</span>
-      <h2>Restauration</h2>
-      <div class="section-divider"></div>
-    </div>
-
-    <div class="menu-grid">
-
-      <div class="menu-category reveal">
-        <h3 class="menu-cat-title">🥗 Entrées</h3>
-        <ul class="menu-list">
-          <li><span>Soupe du jour</span><span class="price">6,00 €</span></li>
-          <li><span>Salade César poulet</span><span class="price">11,00 €</span></li>
-          <li><span>Salade chèvre chaud, miel</span><span class="price">10,00 €</span></li>
-          <li><span>Planche charcuterie</span><span class="price">12,00 €</span></li>
-          <li><span>Planche fromages</span><span class="price">12,00 €</span></li>
-        </ul>
-      </div>
-
-      <div class="menu-category reveal">
-        <h3 class="menu-cat-title">🍽️ Plats</h3>
-        <ul class="menu-list">
-          <li><span>Irish Stew (agneau, légumes)</span><span class="price">16,00 €</span></li>
-          <li><span>Fish & Chips maison</span><span class="price">14,00 €</span></li>
-          <li><span>Saumon grillé, purée</span><span class="price">16,00 €</span></li>
-          <li><span>Plat du jour</span><span class="price">13,00 €</span></li>
-          <li><span class="menu-note">Demandez au comptoir</span></li>
-        </ul>
-      </div>
-
-      <div class="menu-category reveal">
-        <h3 class="menu-cat-title">🍔 Burgers</h3>
-        <ul class="menu-list">
-          <li><span>Irish Burger (bœuf, cheddar)</span><span class="price">14,00 €</span></li>
-          <li><span>Chicken Burger (poulet, pickles)</span><span class="price">13,00 €</span></li>
-          <li><span>Veggie Burger (champignon, féta)</span><span class="price">12,00 €</span></li>
-          <li><span class="menu-note">Servis avec frites maison</span></li>
-        </ul>
-      </div>
-
-      <div class="menu-category reveal">
-        <h3 class="menu-cat-title">🍮 Desserts</h3>
-        <ul class="menu-list">
-          <li><span>Cheesecake maison</span><span class="price">6,00 €</span></li>
-          <li><span>Brownie chocolat</span><span class="price">5,50 €</span></li>
-          <li><span>Crumble pomme cannelle</span><span class="price">6,00 €</span></li>
-        </ul>
-      </div>
-
-    </div>
-  </section>
+  <div id="dynamic-sections">
+    <!-- Chaque catégorie Firebase créera sa propre section ici -->
+  </div>
 
   <!-- ═══════════════════════════════════════════
        ÉVÉNEMENTS
   ═══════════════════════════════════════════ -->
   <section id="evenements">
     <div class="section-header reveal">
-      <span class="section-label">Agenda du mois</span>
+      <span class="section-label">Agenda</span>
       <h2>Événements</h2>
       <div class="section-divider"></div>
     </div>
-
     <div class="events-grid">
-
-      <article class="event-card reveal">
-        <div class="event-date">
-          <span class="event-day">14</span>
-          <span class="event-month">Juin</span>
-        </div>
-        <div class="event-body">
-          <h3>Soirée Rugby</h3>
-          <p>France vs Irlande — Retransmis sur grand écran. Ambiance garantie.</p>
-          <span class="event-tag">Sport</span>
-        </div>
-      </article>
-
-      <article class="event-card reveal">
-        <div class="event-date">
-          <span class="event-day">21</span>
-          <span class="event-month">Juin</span>
-        </div>
-        <div class="event-body">
-          <h3>Fête de la Musique</h3>
-          <p>Live acoustic irlandais avec le groupe The Clover Boys. Entrée libre.</p>
-          <span class="event-tag">Musique live</span>
-        </div>
-      </article>
-
-      <article class="event-card reveal">
-        <div class="event-date">
-          <span class="event-day">28</span>
-          <span class="event-month">Juin</span>
-        </div>
-        <div class="event-body">
-          <h3>Tournoi de Fléchettes</h3>
-          <p>Inscriptions dès 19h. Finale à 21h. Pinte offerte au vainqueur.</p>
-          <span class="event-tag">Jeux</span>
-        </div>
-      </article>
-
+      <!-- Les événements seront chargés depuis Firebase -->
     </div>
   </section>
 
@@ -404,23 +97,26 @@
   ═══════════════════════════════════════════ -->
   <section id="infos">
     <div class="section-header reveal">
-      <span class="section-label">Nous trouver</span>
+      <span class="section-label">Contact</span>
       <h2>Infos pratiques</h2>
       <div class="section-divider"></div>
     </div>
 
-    <div class="infos-grid">
+    <div class="info-grid">
       <div class="info-block reveal">
+        <div class="info-icon">📍</div>
         <h3>Adresse</h3>
         <p>6 Boulevard Carnot<br />90000 Belfort</p>
       </div>
       <div class="info-block reveal">
+        <div class="info-icon">⏰</div>
         <h3>Horaires</h3>
-        <p>Lundi – Jeudi : 17h – 01h<br />Vendredi – Samedi : 17h – 03h<br />Dimanche : 17h – 00h</p>
+        <p>Chargement…</p>
       </div>
       <div class="info-block reveal">
+        <div class="info-icon">☎️</div>
         <h3>Contact</h3>
-        <p>03 84 XX XX XX<br />contact@finnegans.fr</p>
+        <p>Chargement…</p>
       </div>
     </div>
   </section>
@@ -428,30 +124,33 @@
   <!-- ═══════════════════════════════════════════
        FOOTER
   ═══════════════════════════════════════════ -->
-  <footer>
-    <p class="footer-logo">Finnegan's</p>
-    <p class="footer-copy">© 2025 Finnegan's Irish Pub — Belfort. Tous droits réservés.</p>
-    <p class="footer-legal">L'abus d'alcool est dangereux pour la santé. À consommer avec modération.</p>
+  <footer id="footer">
+    <div class="footer-content">
+      <p class="footer-logo">Finnegan's</p>
+      <p class="footer-copy">© 2025 Finnegan's Irish Pub — Belfort</p>
+      <p class="footer-legal">Consommation excessive d'alcool dangereuse pour la santé. À consommer avec modération.</p>
+    </div>
   </footer>
 
   <!-- ═══════════════════════════════════════════
        POPUP ÉVÉNEMENT
   ═══════════════════════════════════════════ -->
-<div id="event-popup" class="popup-hidden">
-  <div class="popup-box">
-    <button class="popup-close" id="popup-close" aria-label="Fermer">&times;</button>
-    <div class="popup-img-wrap">
-      <img src="" alt="Événement" />
-    </div>
-    <div class="popup-body">
-      <p class="popup-label"></p>
-      <h2></h2>
-      <p class="popup-desc"></p>
+  <div id="event-popup" class="popup-overlay popup-hidden">
+    <div class="popup-box">
+      <button class="popup-close" id="popup-close">✕</button>
+      <div class="popup-body">
+        <span class="popup-label">Événement à venir</span>
+        <h2>Titre de l'événement</h2>
+        <p class="popup-desc">Description de l'événement</p>
+      </div>
+      <div class="popup-img-wrap">
+        <img src="" alt="Événement" />
+      </div>
     </div>
   </div>
-</div>
 
-   <script src="js/scripts.js"></script>
   <script type="module" src="js/firebase.js"></script>
+  <script src="js/scripts.js"></script>
+
 </body>
 </html>

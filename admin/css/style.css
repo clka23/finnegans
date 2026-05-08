@@ -444,6 +444,34 @@ textarea { resize: vertical; }
 }
 .tag-btn:hover { opacity: 1; color: #e57373; }
 
+.order-btn {
+  background: rgba(201, 168, 76, 0.12);
+  border: 1px solid rgba(201, 168, 76, 0.25);
+  color: var(--gold);
+  font-size: 0.65rem;
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 1;
+  transition: all var(--transition);
+  cursor: pointer;
+}
+
+.order-btn:hover:not(:disabled) {
+  background: rgba(201, 168, 76, 0.22);
+  border-color: var(--gold);
+  transform: scale(1.05);
+}
+
+.order-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
 .add-inline {
   display: flex;
   gap: 0.5rem;

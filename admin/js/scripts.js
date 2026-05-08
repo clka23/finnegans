@@ -167,7 +167,12 @@ function openPanel(name) {
   document.body.style.overflow = 'hidden';
 
   if (name === 'carte') {
-    loadArticles();
+    console.log('Tentative de chargement des articles...');
+    loadArticles().then(() => {
+      console.log('Articles chargés avec succès');
+    }).catch(err => {
+      console.error('Erreur lors du chargement des articles :', err);
+    });
   }
   if (name === 'popup') {
     loadPopupData();
@@ -212,11 +217,44 @@ let renamingCatId = null;
 
 async function loadCategories() {
   try {
-    const snap = await getDocs(query(collection(db, 'categories'), orderBy('nom')));
+    const snap = await getDocs(collection(db, 'categories'));
     categories = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    
+    // Trier par ordre (si présent), sinon alphabétique
+    categories.sort((a, b) => {
+      if (a.ordre !== undefined && b.ordre !== undefined) {
+        return a.ordre - b.ordre;
+      }
+      if (a.ordre !== undefined) return -1;
+      if (b.ordre !== undefined) return 1;
+      return a.nom.localeCompare(b.nom);
+    });
+    
     renderCategories();
   } catch (err) {
     console.error('Erreur chargement catégories :', err);
+  }
+}
+
+// Fonction pour échanger deux catégories
+async function swapCategories(indexA, indexB) {
+  try {
+    const catA = categories[indexA];
+    const catB = categories[indexB];
+    
+    // Échanger les ordres
+    const tempOrdre = catA.ordre !== undefined ? catA.ordre : indexA;
+    const newOrdreA = catB.ordre !== undefined ? catB.ordre : indexB;
+    const newOrdreB = tempOrdre;
+    
+    // Mettre à jour dans Firestore
+    await updateDoc(doc(db, 'categories', catA.id), { ordre: newOrdreA });
+    await updateDoc(doc(db, 'categories', catB.id), { ordre: newOrdreB });
+    
+    // Recharger les catégories
+    await loadCategories();
+  } catch (err) {
+    console.error('Erreur réorganisation catégories :', err);
   }
 }
 
@@ -227,10 +265,18 @@ function renderCategories() {
   list.innerHTML   = '';
   select.innerHTML = '';
 
-  categories.forEach(cat => {
+  categories.forEach((cat, index) => {
     const tag = document.createElement('div');
     tag.className = 'tag-item';
+    tag.style.display = 'flex';
+    tag.style.alignItems = 'center';
+    tag.style.gap = '0.5rem';
+    
     tag.innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:0.2rem;margin-right:0.3rem">
+        <button class="order-btn order-up" data-id="${cat.id}" data-index="${index}" title="Monter" ${index === 0 ? 'disabled' : ''}>↑</button>
+        <button class="order-btn order-down" data-id="${cat.id}" data-index="${index}" title="Descendre" ${index === categories.length - 1 ? 'disabled' : ''}>↓</button>
+      </div>
       <span class="tag-name" title="Renommer" data-id="${cat.id}">${cat.nom}</span>
       <button class="tag-btn" title="Supprimer" data-id="${cat.id}">✕</button>
     `;
@@ -242,6 +288,7 @@ function renderCategories() {
     select.appendChild(opt);
   });
 
+  // Event listeners pour renommer
   list.querySelectorAll('.tag-name').forEach(el => {
     el.addEventListener('click', () => {
       renamingCatId = el.dataset.id;
@@ -252,6 +299,7 @@ function renderCategories() {
     });
   });
 
+  // Event listeners pour supprimer
   list.querySelectorAll('.tag-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
       const id  = btn.dataset.id;
@@ -263,6 +311,23 @@ function renderCategories() {
       } catch (err) {
         console.error('Erreur suppression catégorie :', err);
       }
+    });
+  });
+
+  // Event listeners pour réorganiser
+  list.querySelectorAll('.order-up').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const index = parseInt(btn.dataset.index);
+      if (index === 0) return;
+      await swapCategories(index, index - 1);
+    });
+  });
+
+  list.querySelectorAll('.order-down').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const index = parseInt(btn.dataset.index);
+      if (index === categories.length - 1) return;
+      await swapCategories(index, index + 1);
     });
   });
 }
@@ -277,7 +342,16 @@ document.getElementById('btn-add-cat').addEventListener('click', async () => {
     return;
   }
   try {
-    await addDoc(collection(db, 'categories'), { nom: val });
+    // Calculer le prochain ordre disponible
+    const maxOrdre = categories.reduce((max, cat) => {
+      return cat.ordre !== undefined && cat.ordre > max ? cat.ordre : max;
+    }, -1);
+    const nouvelOrdre = maxOrdre + 1;
+    
+    await addDoc(collection(db, 'categories'), { 
+      nom: val,
+      ordre: nouvelOrdre
+    });
     input.value = '';
     await loadCategories();
   } catch (err) {
