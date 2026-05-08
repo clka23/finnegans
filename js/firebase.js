@@ -224,20 +224,22 @@ async function loadEvenements() {
       
       article.innerHTML = `
         ${imageHtml}
-        <div class="event-date">
-          <span class="event-day">${ev.jour}</span>
-          <span class="event-month">${ev.mois}</span>
-        </div>
-        <div class="event-body">
-          <h3>${ev.titre}</h3>
-          <p>${ev.description || ''}</p>
-          ${ev.tag ? `<span class="event-tag">${ev.tag}</span>` : ''}
-          ${ev.reservation && ev.reservation.active ? `
-            <button class="hero-cta" style="margin-top:0.8rem;font-size:0.65rem;padding:0.5rem 1.5rem" 
-                    onclick="alert('Réservation pour : ${ev.titre}\\nContactez le pub au 03 84 XX XX XX')">
-              Réserver
-            </button>
-          ` : ''}
+        <div class="event-content-wrap">
+          <div class="event-date">
+            <span class="event-day">${ev.jour}</span>
+            <span class="event-month">${ev.mois}</span>
+          </div>
+          <div class="event-body">
+            <h3>${ev.titre}</h3>
+            <p>${ev.description || ''}</p>
+            ${ev.tag ? `<span class="event-tag">${ev.tag}</span>` : ''}
+            ${ev.reservation && ev.reservation.active ? `
+              <button class="hero-cta" style="margin-top:0.8rem;font-size:0.65rem;padding:0.5rem 1.5rem" 
+                      onclick="alert('Réservation pour : ${ev.titre}\\nContactez le pub au 03 84 XX XX XX')">
+                Réserver
+              </button>
+            ` : ''}
+          </div>
         </div>
       `;
       container.appendChild(article);
