@@ -302,9 +302,6 @@ document.getElementById('rename-cat-input').addEventListener('keydown', e => {
    CARTE — ARTICLES
 ═══════════════════════════════════════════ */
 
-/**
- * 🔥 NOUVEAU : Charge et affiche les articles existants
- */
 async function loadArticles() {
   const container = document.querySelector('#panel-carte .panel-section:last-child');
   if (!container) return;
@@ -319,28 +316,30 @@ async function loadArticles() {
       return;
     }
 
-    snap.docs.forEach(doc => {
-      const article = doc.data();
+    snap.docs.forEach(articleDoc => {  // ✅ RENOMMÉ de "doc" à "articleDoc"
+      const article = articleDoc.data();
+      const articleId = articleDoc.id;  // ✅ ID stocké séparément
       const cat = categories.find(c => c.id === article.categorieId);
       const catName = cat ? cat.nom : 'Sans catégorie';
 
       const div = document.createElement('div');
-      div.className = 'event-item'; // réutilisation du style événement, cohérent
+      div.className = 'event-item';
       div.innerHTML = `
         <div class="event-item-info">
           <span class="event-item-date" style="background:rgba(201,168,76,0.15);color:var(--gold)">${catName}</span>
           <span class="event-item-titre">${article.nom}</span>
           ${article.description ? `<span style="font-size:0.7rem;opacity:0.5;margin-left:0.5rem">— ${article.description}</span>` : ''}
         </div>
-        <button class="tag-btn delete-article" data-id="${doc.id}" title="Supprimer">✕</button>
+        <button class="tag-btn delete-article" data-id="${articleId}" title="Supprimer">✕</button>
       `;
 
       // Gestionnaire pour supprimer un article
       div.querySelector('.delete-article').addEventListener('click', async (e) => {
         e.stopPropagation();
+        const idToDelete = articleId;  // ✅ Utilise l'ID stocké
         if (!confirm(`Supprimer l'article "${article.nom}" ?`)) return;
         try {
-          await deleteDoc(doc(db, 'articles', doc.id));
+          await deleteDoc(doc(db, 'articles', idToDelete));  // ✅ Utilise deleteDoc importé, avec le bon ID
           await loadArticles(); // Recharge la liste après suppression
         } catch (err) {
           console.error('Erreur suppression article :', err);
@@ -356,66 +355,6 @@ async function loadArticles() {
     container.innerHTML += '<p class="panel-placeholder" style="color:#e57373">Erreur de chargement.</p>';
   }
 }
-
-function addVariante(label = '', price = '') {
-  const row = document.createElement('div');
-  row.className = 'variante-row';
-  row.innerHTML = `
-    <input type="text" class="v-label" placeholder="ex : Pinte 50cl" value="${label}" />
-    <input type="text" class="v-price" placeholder="ex : 7,50 €" value="${price}" />
-    <button class="btn-remove-variante" title="Supprimer">✕</button>
-  `;
-  row.querySelector('.btn-remove-variante').addEventListener('click', () => row.remove());
-  document.getElementById('variantes-list').appendChild(row);
-}
-
-document.getElementById('btn-add-variante').addEventListener('click', () => addVariante());
-addVariante();
-
-document.getElementById('btn-save-article').addEventListener('click', async () => {
-  const feedback = document.getElementById('article-feedback');
-  const nom   = document.getElementById('article-nom').value.trim();
-  const catId = document.getElementById('article-cat').value;
-  const desc  = document.getElementById('article-desc').value.trim();
-
-  const variantes = [];
-  document.querySelectorAll('.variante-row').forEach(row => {
-    const l = row.querySelector('.v-label').value.trim();
-    const p = row.querySelector('.v-price').value.trim();
-    if (l && p) variantes.push({ label: l, price: p });
-  });
-
-  if (!nom || !catId) {
-    feedback.textContent = 'Le nom et la catégorie sont obligatoires.';
-    feedback.className = 'form-feedback error';
-    return;
-  }
-
-  try {
-    await addDoc(collection(db, 'articles'), {
-      categorieId: catId,
-      nom,
-      description: desc,
-      variantes,
-      createdAt: new Date()
-    });
-    feedback.textContent = '✓ Article ajouté.';
-    feedback.className = 'form-feedback success';
-    document.getElementById('article-nom').value  = '';
-    document.getElementById('article-desc').value = '';
-    document.getElementById('variantes-list').innerHTML = '';
-    addVariante();
-    
-    // 🔥 Recharge la liste des articles pour afficher le nouveau
-    await loadArticles();
-    
-    setTimeout(() => feedback.textContent = '', 3000);
-  } catch (err) {
-    feedback.textContent = 'Erreur lors de l\'ajout.';
-    feedback.className = 'form-feedback error';
-    console.error(err);
-  }
-});
 
 
 /* ═══════════════════════════════════════════
