@@ -133,26 +133,3 @@ document.querySelectorAll('#nav-links a').forEach(link => {
 });
 
 
-/* ═══════════════════════════════════════════
-   POPUP ÉVÉNEMENT
-   Pour désactiver depuis l'admin :
-   mettre popup-hidden sur #event-popup au chargement
-   (via Firebase : if (!eventActive) popup.classList.add('popup-hidden'))
-═══════════════════════════════════════════ */
-const popup      = document.getElementById('event-popup');
-const popupClose = document.getElementById('popup-close');
-
-if (popup) {
-  // Affiche au chargement
-  popup.classList.remove('popup-hidden');
-
-  // Ferme via la croix
-  popupClose.addEventListener('click', () => {
-    popup.classList.add('popup-hidden');
-  });
-
-  // Ferme en cliquant sur le fond
-  popup.addEventListener('click', e => {
-    if (e.target === popup) popup.classList.add('popup-hidden');
-  });
-}

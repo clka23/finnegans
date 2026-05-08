@@ -264,9 +264,23 @@ async function loadPopup() {
 /* ═══════════════════════════════════════════
    INIT — TOUT CHARGER
 ═══════════════════════════════════════════ */
-document.addEventListener('DOMContentLoaded', () => {
-  loadCarte();
-  loadEvenements();
-  loadInfos();
-  loadPopup();
+document.addEventListener('DOMContentLoaded', async () => {
+  // Force l'affichage immédiat des éléments reveal du hero
+  document.querySelectorAll('#hero .reveal').forEach(el => {
+    el.classList.add('visible');
+  });
+
+  // Charge les données Firebase
+  await loadCarte();
+  await loadEvenements();
+  await loadInfos();
+  await loadPopup();
+
+  // Réinitialise l'IntersectionObserver pour les nouveaux éléments
+  // (l'ancien observe toujours les éléments existants, on le relance)
+  document.querySelectorAll('.reveal:not(.visible)').forEach(el => {
+    if (el.closest('#hero')) {
+      el.classList.add('visible');
+    }
+  });
 });
