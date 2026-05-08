@@ -217,7 +217,7 @@ async function loadInfos() {
 /* ═══════════════════════════════════════════
    4. CHARGER LA POPUP
 ═══════════════════════════════════════════ */
-async function loadPopup() {
+aasync function loadPopup() {
   const popup = document.getElementById('event-popup');
   if (!popup) return;
 
@@ -243,6 +243,11 @@ async function loadPopup() {
     if (titreEl && data.titre) titreEl.textContent = data.titre;
     if (descEl && data.description) descEl.textContent = data.description;
     if (labelEl) labelEl.textContent = 'Événement à venir';
+    
+    // NOUVEAU : Charge l'image depuis Firebase Storage
+    if (imgEl && data.imageUrl) {
+      imgEl.src = data.imageUrl;
+    }
 
     // Afficher
     popup.classList.remove('popup-hidden');
@@ -259,8 +264,6 @@ async function loadPopup() {
     console.error('Erreur chargement popup :', err);
   }
 }
-
-
 /* ═══════════════════════════════════════════
    INIT — TOUT CHARGER
 ═══════════════════════════════════════════ */
