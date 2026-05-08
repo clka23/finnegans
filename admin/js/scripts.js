@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════
-   FINNEGAN'S — ADMIN scripts.js v4
-   Firebase Auth + Firestore
+   FINNEGAN'S — ADMIN scripts.js v4.1
+   Firebase Auth + Firestore (Correctif affichage articles)
 ═══════════════════════════════════════════ */
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
@@ -156,6 +156,11 @@ function openPanel(name) {
   panel.classList.add('open');
   panelOverlay.classList.add('active');
   document.body.style.overflow = 'hidden';
+
+  // 🔥 Charger les articles quand on ouvre le panneau Carte
+  if (name === 'carte') {
+    loadArticles();
+  }
 }
 
 function closeAllPanels() {
@@ -296,6 +301,62 @@ document.getElementById('rename-cat-input').addEventListener('keydown', e => {
 /* ═══════════════════════════════════════════
    CARTE — ARTICLES
 ═══════════════════════════════════════════ */
+
+/**
+ * 🔥 NOUVEAU : Charge et affiche les articles existants
+ */
+async function loadArticles() {
+  const container = document.querySelector('#panel-carte .panel-section:last-child');
+  if (!container) return;
+
+  container.innerHTML = '<h4>Articles existants</h4>';
+
+  try {
+    const snap = await getDocs(query(collection(db, 'articles'), orderBy('nom')));
+    
+    if (snap.empty) {
+      container.innerHTML += '<p class="panel-placeholder">Aucun article pour le moment.</p>';
+      return;
+    }
+
+    snap.docs.forEach(doc => {
+      const article = doc.data();
+      const cat = categories.find(c => c.id === article.categorieId);
+      const catName = cat ? cat.nom : 'Sans catégorie';
+
+      const div = document.createElement('div');
+      div.className = 'event-item'; // réutilisation du style événement, cohérent
+      div.innerHTML = `
+        <div class="event-item-info">
+          <span class="event-item-date" style="background:rgba(201,168,76,0.15);color:var(--gold)">${catName}</span>
+          <span class="event-item-titre">${article.nom}</span>
+          ${article.description ? `<span style="font-size:0.7rem;opacity:0.5;margin-left:0.5rem">— ${article.description}</span>` : ''}
+        </div>
+        <button class="tag-btn delete-article" data-id="${doc.id}" title="Supprimer">✕</button>
+      `;
+
+      // Gestionnaire pour supprimer un article
+      div.querySelector('.delete-article').addEventListener('click', async (e) => {
+        e.stopPropagation();
+        if (!confirm(`Supprimer l'article "${article.nom}" ?`)) return;
+        try {
+          await deleteDoc(doc(db, 'articles', doc.id));
+          await loadArticles(); // Recharge la liste après suppression
+        } catch (err) {
+          console.error('Erreur suppression article :', err);
+          alert('Erreur lors de la suppression.');
+        }
+      });
+
+      container.appendChild(div);
+    });
+
+  } catch (err) {
+    console.error('Erreur chargement articles :', err);
+    container.innerHTML += '<p class="panel-placeholder" style="color:#e57373">Erreur de chargement.</p>';
+  }
+}
+
 function addVariante(label = '', price = '') {
   const row = document.createElement('div');
   row.className = 'variante-row';
@@ -344,6 +405,10 @@ document.getElementById('btn-save-article').addEventListener('click', async () =
     document.getElementById('article-desc').value = '';
     document.getElementById('variantes-list').innerHTML = '';
     addVariante();
+    
+    // 🔥 Recharge la liste des articles pour afficher le nouveau
+    await loadArticles();
+    
     setTimeout(() => feedback.textContent = '', 3000);
   } catch (err) {
     feedback.textContent = 'Erreur lors de l\'ajout.';
@@ -773,6 +838,14 @@ function sendOtp(channel) {
   document.getElementById('otp-step-2').classList.remove('hidden');
   setTimeout(() => document.querySelector('.otp-digit').focus(), 80);
 }
+
+document.querySelectorAll('.otp-digit').forEach((input, i, all) => {
+  input.addEventListener('input', () => {
+    input.value = input.value.replace(/\D/g, '').slice(0, 1);
+    if (input.value && i < all.length - 1) all[i + 1].focus();
+  });
+  input.addEventListener('keydown', e => {
+    if (
 
 document.querySelectorAll('.otp-digit').forEach((input, i, all) => {
   input.addEventListener('input', () => {
