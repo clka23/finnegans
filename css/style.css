@@ -595,7 +595,7 @@ section {
 ═══════════════════════════════════════════ */
 #infos { background: var(--wood); }
 
-.infos-grid {
+.info-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 2rem;
@@ -604,17 +604,35 @@ section {
   text-align: center;
 }
 
+.info-block {
+  text-align: center;
+  padding: 2rem 1.5rem;
+  background: rgba(13, 31, 16, 0.3);
+  border: 1px solid rgba(201, 168, 76, 0.15);
+  border-radius: 8px;
+  transition: all 0.4s ease;
+}
+
+.info-block:hover {
+  border-color: rgba(201, 168, 76, 0.35);
+  background: rgba(13, 31, 16, 0.45);
+  transform: translateY(-4px);
+}
+
 .info-block h3 {
   font-family: var(--font-display);
   font-size: 0.9rem;
   color: var(--gold);
   letter-spacing: 0.1em;
   margin-bottom: 0.8rem;
+  text-align: center;
 }
+
 .info-block p {
   font-size: 0.9rem;
   color: var(--cream-dim);
   line-height: 1.8;
+  text-align: center;
 }
 
 
