@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Finnegan's — Administration</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=IM+Fell+English:ital@0;1&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════
+       LOGIN
+  ═══════════════════════════════════════════ -->
+  <div id="login-screen">
+    <div class="login-bg"></div>
+    <div class="login-overlay"></div>
+    <div class="login-box">
+      <div class="login-header">
+        <p class="login-label">Administration</p>
+        <h1 class="login-logo">Finnegan's</h1>
+        <div class="login-divider"></div>
+      </div>
+      <form id="login-form" novalidate>
+        <div class="field-group">
+          <label for="login-email">Adresse e-mail</label>
+          <input type="email" id="login-email" placeholder="admin@finnegans.fr" autocomplete="email" required />
+        </div>
+        <div class="field-group">
+          <label for="login-password">Mot de passe</label>
+          <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" required />
+          <button type="button" class="toggle-pw" id="toggle-pw" aria-label="Afficher/masquer">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+        <p class="login-error" id="login-error"></p>
+        <button type="submit" class="btn-primary" id="login-btn"><span>Connexion</span></button>
+      </form>
+      <p class="login-footer">Accès réservé — Finnegan's Irish Pub</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       ADMIN
+  ═══════════════════════════════════════════ -->
+  <div id="admin-screen" class="hidden">
+
+    <header id="topbar">
+      <div class="topbar-left">
+        <span class="topbar-logo">Finnegan's</span>
+        <span class="topbar-sub">Administration</span>
+      </div>
+      <div class="topbar-right">
+        <span class="topbar-user" id="topbar-user">admin@finnegans.fr</span>
+        <button class="btn-logout" id="btn-logout">Déconnexion</button>
+      </div>
+    </header>
+
+    <main id="dashboard">
+      <div class="dash-header">
+        <h2>Tableau de bord</h2>
+        <p class="dash-sub">Que souhaitez-vous modifier ?</p>
+      </div>
+      <div class="dash-grid">
+
+        <button class="dash-card" data-panel="carte">
+          <div class="dash-card-icon">🍺</div>
+          <div class="dash-card-body">
+            <h3>Carte — Articles</h3>
+            <p>Gérer les catégories et les articles (bières, cocktails, softs, restauration…)</p>
+          </div>
+          <div class="dash-card-arrow">→</div>
+        </button>
+
+        <button class="dash-card" data-panel="evenements">
+          <div class="dash-card-icon">📅</div>
+          <div class="dash-card-body">
+            <h3>Événements</h3>
+            <p>Ajouter, modifier ou supprimer un événement de l'agenda</p>
+          </div>
+          <div class="dash-card-arrow">→</div>
+        </button>
+
+        <button class="dash-card" data-panel="popup">
+          <div class="dash-card-icon">🪟</div>
+          <div class="dash-card-body">
+            <h3>Popup d'accueil</h3>
+            <p>Activer / désactiver la popup et modifier son contenu</p>
+          </div>
+          <div class="dash-card-arrow">→</div>
+        </button>
+
+        <button class="dash-card" data-panel="infos">
+          <div class="dash-card-icon">ℹ️</div>
+          <div class="dash-card-body">
+            <h3>Infos pratiques</h3>
+            <p>Adresse, horaires, téléphone et e-mail du pub</p>
+          </div>
+          <div class="dash-card-arrow">→</div>
+        </button>
+
+        <button class="dash-card" data-panel="abonnement">
+          <div class="dash-card-icon">💳</div>
+          <div class="dash-card-body">
+            <h3>Abonnement</h3>
+            <p>Statut, renouvellement et factures</p>
+          </div>
+          <div class="dash-card-arrow">→</div>
+        </button>
+
+        <button class="dash-card" data-panel="compte">
+          <div class="dash-card-icon">👤</div>
+          <div class="dash-card-body">
+            <h3>Mon compte</h3>
+            <p>Changer l'e-mail, le mot de passe ou le téléphone de contact</p>
+          </div>
+          <div class="dash-card-arrow">→</div>
+        </button>
+
+      </div>
+    </main>
+
+    <div id="panel-overlay"></div>
+
+    <!-- ── PANNEAU : CARTE ── -->
+    <aside class="side-panel" id="panel-carte">
+      <div class="panel-header">
+        <h3>Carte — Articles</h3>
+        <button class="panel-close" data-close="carte">✕</button>
+      </div>
+      <div class="panel-body">
+
+        <div class="panel-section">
+          <h4>Catégories</h4>
+          <div id="categories-list" class="tags-list"></div>
+          <div class="add-inline">
+            <input type="text" id="new-cat-input" placeholder="Nouvelle catégorie…" />
+            <button class="btn-primary small" id="btn-add-cat">Ajouter</button>
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <h4>Ajouter un article</h4>
+          <div class="field-group">
+            <label>Catégorie</label>
+            <select id="article-cat"></select>
+          </div>
+          <div class="field-group">
+            <label>Nom</label>
+            <input type="text" id="article-nom" placeholder="ex : Guinness" />
+          </div>
+          <div class="field-group">
+            <label>Description / origine <span class="optional">(optionnel)</span></label>
+            <input type="text" id="article-desc" placeholder="ex : Ireland — Dry Stout" />
+          </div>
+          <div class="field-group">
+            <label>Variantes de prix</label>
+            <div id="variantes-list"></div>
+            <button class="btn-ghost" id="btn-add-variante">+ Ajouter une variante</button>
+          </div>
+          <button class="btn-primary small" id="btn-save-article">Ajouter l'article</button>
+          <p class="form-feedback" id="article-feedback"></p>
+        </div>
+
+        <div class="panel-section">
+          <h4>Articles existants</h4>
+          <p class="panel-placeholder">Les articles s'afficheront ici une fois Firebase connecté.</p>
+        </div>
+
+      </div>
+    </aside>
+
+    <!-- ── PANNEAU : ÉVÉNEMENTS ── -->
+    <aside class="side-panel" id="panel-evenements">
+      <div class="panel-header">
+        <h3>Événements</h3>
+        <button class="panel-close" data-close="evenements">✕</button>
+      </div>
+      <div class="panel-body">
+
+        <div class="panel-section">
+          <h4>Ajouter un événement</h4>
+          <div class="field-group">
+            <label>Date</label>
+            <input type="date" id="event-date" />
+          </div>
+          <div class="field-group">
+            <label>Titre</label>
+            <input type="text" id="event-titre" placeholder="ex : Soirée Rugby" />
+          </div>
+          <div class="field-group">
+            <label>Description <span class="optional">(optionnel)</span></label>
+            <textarea id="event-desc" rows="3" placeholder="ex : France vs Irlande — Grand écran, ambiance garantie."></textarea>
+          </div>
+          <div class="field-group">
+            <label>Tag</label>
+            <input type="text" id="event-tag" placeholder="ex : Sport, Musique live, Jeux…" />
+          </div>
+          <button class="btn-primary small" id="btn-save-event">Ajouter l'événement</button>
+          <p class="form-feedback" id="event-feedback"></p>
+        </div>
+
+        <div class="panel-section">
+          <h4>Événements enregistrés</h4>
+          <p class="panel-placeholder">Les événements s'afficheront ici une fois Firebase connecté.</p>
+        </div>
+
+      </div>
+    </aside>
+
+    <!-- ── PANNEAU : POPUP ── -->
+    <aside class="side-panel" id="panel-popup">
+      <div class="panel-header">
+        <h3>Popup d'accueil</h3>
+        <button class="panel-close" data-close="popup">✕</button>
+      </div>
+      <div class="panel-body">
+
+        <div class="panel-section">
+          <h4>Activation</h4>
+          <div class="toggle-row">
+            <span>Afficher la popup sur le site</span>
+            <label class="toggle-switch">
+              <input type="checkbox" id="popup-active" checked />
+              <span class="toggle-track"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <h4>Image</h4>
+          <div class="upload-zone" id="upload-zone">
+            <input type="file" id="popup-img-input" accept="image/*" hidden />
+            <div class="upload-preview" id="upload-preview">
+              <div class="upload-placeholder" id="upload-placeholder">
+                <span class="upload-icon">🖼️</span>
+                <p>Cliquez ou déposez une image ici</p>
+                <span class="upload-hint">JPG, PNG, WEBP — max 5 Mo</span>
+              </div>
+              <img id="upload-img-preview" src="" alt="Aperçu" class="hidden" />
+            </div>
+            <div class="upload-actions">
+              <button class="btn-ghost upload-btn" id="upload-btn">Choisir une image</button>
+              <button class="btn-ghost danger hidden" id="upload-remove">Supprimer</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <h4>Contenu</h4>
+          <div class="field-group">
+            <label>Titre</label>
+            <input type="text" id="popup-titre" placeholder="ex : Soirée Rugby" />
+          </div>
+          <div class="field-group">
+            <label>Description</label>
+            <textarea id="popup-desc" rows="3" placeholder="ex : France vs Irlande — Vendredi 14 Juin à 20h"></textarea>
+          </div>
+          <button class="btn-primary small" id="btn-save-popup">Enregistrer</button>
+          <p class="form-feedback" id="popup-feedback"></p>
+        </div>
+
+      </div>
+    </aside>
+
+    <!-- ── PANNEAU : INFOS PRATIQUES ── -->
+    <aside class="side-panel" id="panel-infos">
+      <div class="panel-header">
+        <h3>Infos pratiques</h3>
+        <button class="panel-close" data-close="infos">✕</button>
+      </div>
+      <div class="panel-body">
+
+        <div class="panel-section">
+          <h4>Adresse</h4>
+          <div class="field-group">
+            <label>Rue</label>
+            <input type="text" id="infos-rue" placeholder="6 Boulevard Carnot" />
+          </div>
+          <div class="field-group">
+            <label>Ville</label>
+            <input type="text" id="infos-ville" placeholder="90000 Belfort" />
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <h4>Horaires</h4>
+          <div id="horaires-grid"></div>
+        </div>
+
+        <div class="panel-section">
+          <h4>Contact</h4>
+          <div class="field-group">
+            <label>Téléphone affiché sur le site</label>
+            <input type="tel" id="infos-tel" placeholder="03 84 XX XX XX" />
+          </div>
+          <div class="field-group">
+            <label>E-mail affiché sur le site</label>
+            <input type="email" id="infos-email" placeholder="contact@finnegans.fr" />
+          </div>
+          <button class="btn-primary small" id="btn-save-infos">Enregistrer</button>
+          <p class="form-feedback" id="infos-feedback"></p>
+        </div>
+
+      </div>
+    </aside>
+
+    <!-- ── PANNEAU : ABONNEMENT ── -->
+    <aside class="side-panel" id="panel-abonnement">
+      <div class="panel-header">
+        <h3>Abonnement</h3>
+        <button class="panel-close" data-close="abonnement">✕</button>
+      </div>
+      <div class="panel-body">
+        <p class="panel-intro">Informations relatives à votre abonnement.</p>
+        <div class="panel-section">
+          <div class="info-row">
+            <span class="info-label">Statut</span>
+            <span class="badge badge-active">Actif</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Formule</span>
+            <span>Site + Admin — Mensuel</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Prochain renouvellement</span>
+            <span>—</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Montant</span>
+            <span>—</span>
+          </div>
+        </div>
+        <div class="panel-section">
+          <h4>Factures</h4>
+          <p class="panel-placeholder">Les factures seront disponibles ici une fois Stripe connecté.</p>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ── PANNEAU : MON COMPTE ── -->
+    <aside class="side-panel" id="panel-compte">
+      <div class="panel-header">
+        <h3>Mon compte</h3>
+        <button class="panel-close" data-close="compte">✕</button>
+      </div>
+      <div class="panel-body">
+        <p class="panel-intro">Modifiez vos identifiants de connexion.</p>
+
+        <div class="panel-section">
+          <h4>Adresse e-mail</h4>
+          <div class="field-group">
+            <label>Nouvelle adresse e-mail</label>
+            <input type="email" id="compte-email" placeholder="nouveau@email.fr" />
+          </div>
+          <button class="btn-primary small" id="btn-change-email">Changer l'e-mail</button>
+          <p class="form-feedback" id="email-feedback"></p>
+        </div>
+
+        <div class="panel-section">
+          <h4>Téléphone de contact</h4>
+          <div class="field-group">
+            <label>Nouveau numéro</label>
+            <input type="tel" id="compte-tel" placeholder="06 XX XX XX XX" />
+          </div>
+          <button class="btn-primary small" id="btn-change-tel">Changer le téléphone</button>
+          <p class="form-feedback" id="tel-feedback"></p>
+        </div>
+
+        <div class="panel-section">
+          <h4>Mot de passe</h4>
+          <div class="field-group">
+            <label>Mot de passe actuel</label>
+            <input type="password" id="compte-pw-old" placeholder="••••••••" />
+          </div>
+          <div class="field-group">
+            <label>Nouveau mot de passe</label>
+            <input type="password" id="compte-pw-new" placeholder="••••••••" />
+          </div>
+          <div class="field-group">
+            <label>Confirmer</label>
+            <input type="password" id="compte-pw-confirm" placeholder="••••••••" />
+          </div>
+          <button class="btn-primary small" id="btn-change-pw">Changer le mot de passe</button>
+          <p class="form-feedback" id="pw-feedback"></p>
+        </div>
+
+      </div>
+    </aside>
+
+  </div><!-- /admin-screen -->
+
+  <!-- ═══════════════════════════════════════════
+       MODALES
+  ═══════════════════════════════════════════ -->
+
+  <!-- Modale confirmation mot de passe -->
+  <div class="modale-overlay hidden" id="modale-pw">
+    <div class="modale-box">
+      <h3>Confirmer le changement</h3>
+      <p>Voulez-vous vraiment changer votre mot de passe ?</p>
+      <div class="modale-actions">
+        <button class="btn-ghost" id="modale-pw-cancel">Annuler</button>
+        <button class="btn-primary small" id="modale-pw-confirm">Confirmer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modale OTP (email / téléphone) -->
+  <div class="modale-overlay hidden" id="modale-otp">
+    <div class="modale-box">
+      <button class="modale-close" id="modale-otp-close">✕</button>
+
+      <!-- Étape 1 : choix du canal -->
+      <div id="otp-step-1">
+        <h3 id="otp-title">Vérification</h3>
+        <p id="otp-intro">Choisissez comment recevoir votre code de vérification.</p>
+        <div class="otp-choices">
+          <button class="otp-choice" id="otp-by-sms">
+            <span class="otp-choice-icon">📱</span>
+            <span>Par SMS</span>
+          </button>
+          <button class="otp-choice" id="otp-by-email">
+            <span class="otp-choice-icon">✉️</span>
+            <span>Par e-mail</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Étape 2 : saisie du code -->
+      <div id="otp-step-2" class="hidden">
+        <h3>Entrez le code</h3>
+        <p id="otp-sent-to" class="otp-sent-label"></p>
+        <div class="otp-inputs" id="otp-inputs">
+          <input type="text" inputmode="numeric" maxlength="1" class="otp-digit" />
+          <input type="text" inputmode="numeric" maxlength="1" class="otp-digit" />
+          <input type="text" inputmode="numeric" maxlength="1" class="otp-digit" />
+          <input type="text" inputmode="numeric" maxlength="1" class="otp-digit" />
+          <input type="text" inputmode="numeric" maxlength="1" class="otp-digit" />
+          <input type="text" inputmode="numeric" maxlength="1" class="otp-digit" />
+        </div>
+        <p class="form-feedback" id="otp-feedback"></p>
+        <div class="modale-actions">
+          <button class="btn-ghost" id="otp-back">Retour</button>
+          <button class="btn-primary small" id="otp-validate">Valider</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Modale renommer catégorie -->
+  <div class="modale-overlay hidden" id="modale-rename-cat">
+    <div class="modale-box">
+      <button class="modale-close" id="modale-rename-close">✕</button>
+      <h3>Renommer la catégorie</h3>
+      <div class="field-group" style="margin-top:1.2rem">
+        <label>Nouveau nom</label>
+        <input type="text" id="rename-cat-input" placeholder="Nouveau nom…" />
+      </div>
+      <div class="modale-actions">
+        <button class="btn-ghost" id="rename-cat-cancel">Annuler</button>
+        <button class="btn-primary small" id="rename-cat-confirm">Renommer</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/scripts.js"></script>
+</body>
+</html>
