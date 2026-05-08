@@ -1014,12 +1014,12 @@ let cropState = {
   callback: null
 };
 
-// Ratios par contexte
+// Ratios par contexte (basés sur le CSS du site public)
 const CROP_RATIOS = {
-  popup: 4/3,      // Popup d'accueil
-  category: 16/9,  // Tuiles de catégories
-  article: 4/3,    // Photos d'articles
-  event: 16/9      // Images d'événements
+  popup: 16/9,      // Popup d'accueil (large)
+  category: 1.2,    // Tuiles de catégories (légèrement large)
+  article: 1.4,     // Photos d'articles (280px / 200px)
+  event: 1.56       // Images d'événements (280px / 180px)
 };
 
 function openCropModal(file, context, callback) {
@@ -1049,9 +1049,15 @@ function openCropModal(file, context, callback) {
       
       cropState.ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       
-      // Initialiser la zone de crop au centre
-      const cropWidth = canvas.width * 0.8;
-      const cropHeight = cropWidth / cropState.aspectRatio;
+      // Initialiser la zone de crop au centre avec le bon ratio
+      let cropWidth = canvas.width * 0.8;
+      let cropHeight = cropWidth / cropState.aspectRatio;
+      
+      // Si la hauteur dépasse, ajuster par la hauteur
+      if (cropHeight > canvas.height * 0.8) {
+        cropHeight = canvas.height * 0.8;
+        cropWidth = cropHeight * cropState.aspectRatio;
+      }
       
       cropState.cropData = {
         x: (canvas.width - cropWidth) / 2,
