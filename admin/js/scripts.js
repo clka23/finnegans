@@ -838,15 +838,6 @@ function sendOtp(channel) {
   document.getElementById('otp-step-2').classList.remove('hidden');
   setTimeout(() => document.querySelector('.otp-digit').focus(), 80);
 }
-
-document.querySelectorAll('.otp-digit').forEach((input, i, all) => {
-  input.addEventListener('input', () => {
-    input.value = input.value.replace(/\D/g, '').slice(0, 1);
-    if (input.value && i < all.length - 1) all[i + 1].focus();
-  });
-  input.addEventListener('keydown', e => {
-    if (
-
 document.querySelectorAll('.otp-digit').forEach((input, i, all) => {
   input.addEventListener('input', () => {
     input.value = input.value.replace(/\D/g, '').slice(0, 1);
